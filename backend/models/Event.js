@@ -21,7 +21,7 @@ const eventSchema = new mongoose.Schema({
     }],
     category: {
         type: String,
-        enum: ['Technical', 'Cultural', 'Sports', 'Workshop', 'Non Technical', 'Non-Technical', 'Pro-Show', 'Ideathon', 'Paper Presentation', 'Project Presentation', 'Live-In Concert', 'Hackathon'],
+        enum: ['Technical', 'Cultural', 'Workshop', 'Non Technical', 'Non-Technical', 'Ideathon', 'Paper Presentation', 'Project Presentation', 'Hackathon'],
         required: true,
     },
     eventType: {
@@ -52,9 +52,6 @@ const eventSchema = new mongoose.Schema({
     rules: [{
         type: String,
     }],
-    artistName: {
-        type: String, // For Live-In Concert
-    },
     pptTemplateUrl: {
         type: String,
     },
@@ -91,16 +88,6 @@ const eventSchema = new mongoose.Schema({
     registrationFee: {
         type: Number,
         default: 0,
-    },
-    // New Fields for Sports
-    gender: {
-        type: String, // 'Men', 'Women', 'Both'
-        enum: ['Men', 'Women', 'Both', ''],
-        default: ''
-    },
-    teamPrice: {
-        type: Number, // Cost per team/participant for Sports
-        default: 0
     },
     coordinators: [{
         name: String,

@@ -11,7 +11,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = [
     'https://kcedhruva-orpin.vercel.app',
-    'https://www.kcedhruva.in'
+    'https://www.kcedhruva.in',
+    'https://www.kcekalam.in',
+    'https://praveenmurugan.me/kalam2026/'
 ];
 
 if (process.env.CLIENT_URL) {
@@ -28,7 +30,7 @@ app.use(cors({
         if (!origin) return callback(null, true);
 
         const isAllowed = allowedOrigins.includes(origin) ||
-            (typeof origin === 'string' && (origin.endsWith('localhost:5173') || origin.endsWith('.kcedhruva.in')));
+            (typeof origin === 'string' && (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || origin.endsWith('.kcekalam.in') || origin.endsWith('.kcedhruva.in')));
 
         if (isAllowed) {
             callback(null, true);
@@ -41,6 +43,7 @@ app.use(cors({
 }));
 app.use(helmet({
     crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false,
 }));
 app.use(morgan('dev'));
 app.use(cookieParser());
@@ -68,7 +71,7 @@ app.use('/api/content', dynamicContentRoutes);
 app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
-    res.send('Secure DHRUVA 2025 API is running');
+    res.send('Secure KALAM 2026 API is running');
 });
 
 module.exports = app;

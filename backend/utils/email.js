@@ -63,7 +63,7 @@ const sendRegistrationEmail = async (registration, pass, events) => {
         : '<li>No specific events selected (General Access)</li>';
 
     const mailOptions = {
-        from: `"Dhruva Team" <${process.env.EMAIL_USER}>`,
+        from: `"Kalam Team" <${process.env.EMAIL_USER}>`,
         to: registration.email,
         subject: `Registration Confirmed - ${pass.name}`,
         html: `
@@ -72,7 +72,7 @@ const sendRegistrationEmail = async (registration, pass, events) => {
                     
                     <!-- Header -->
                     <div style="text-align: center; padding: 30px; background: linear-gradient(to right, #000000, #1a1a1a); border-bottom: 1px solid #333;">
-                        <h1 style="margin: 0; color: #fff; font-size: 28px; letter-spacing: 2px;">DHRUVA 2025</h1>
+                        <h1 style="margin: 0; color: #fff; font-size: 28px; letter-spacing: 2px;">KALAM 2026</h1>
                         <p style="color: #888; margin: 10px 0 0;">Outshine. Outperform. Outlast.</p>
                     </div>
 
@@ -141,7 +141,7 @@ const sendRegistrationEmail = async (registration, pass, events) => {
                     <!-- Footer -->
                     <div style="text-align: center; padding: 20px; background-color: #111; border-top: 1px solid #333; color: #666; font-size: 12px;">
                         <p>This is a system generated email. Please present this QR code at the registration desk.</p>
-                        <p>&copy; 2026 Dhruva Organizing Team</p>
+                        <p>&copy; 2026 Kalam Organizing Team</p>
                     </div>
                 </div>
             </div>

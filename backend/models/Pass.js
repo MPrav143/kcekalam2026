@@ -19,11 +19,49 @@ const passSchema = new mongoose.Schema({
     }],
     color: {
         type: String,
-        default: 'blue'
+        default: '#6D28D9'
+    },
+    description: {
+        type: String,
+        default: 'FULL FESTIVAL ENTRY • ALL OFFICIAL PERKS INCLUDED',
+        trim: true
     },
     isActive: {
         type: Boolean,
         default: true
+    },
+    currency: {
+        type: String,
+        default: '₹',
+        trim: true
+    },
+    eventName: {
+        type: String,
+        default: 'KALAM',
+        trim: true
+    },
+    eventYear: {
+        type: String,
+        default: '2026',
+        trim: true
+    },
+    buttonText: {
+        type: String,
+        default: 'GET MY PASS',
+        trim: true
+    },
+    registrationUrl: {
+        type: String,
+        default: '',
+        trim: true
+    },
+    customLogo: {
+        type: String,
+        default: ''
+    },
+    themeConfig: {
+        type: Object,
+        default: {}
     }
 }, { timestamps: true });
 

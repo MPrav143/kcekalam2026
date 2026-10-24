@@ -5,7 +5,7 @@ const Admin = require('./models/Admin');
 
 const run = async () => {
     try {
-        await mongoose.connect('mongodb://127.0.0.1:27017/dhruva2025');
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/kalam2026');
         console.log('Connected to DB');
 
         const admin = await Admin.findOne();

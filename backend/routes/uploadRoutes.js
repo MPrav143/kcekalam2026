@@ -25,16 +25,16 @@ const upload = multer({
 // Check File Type
 function checkFileType(file, cb) {
     // Allowed ext
-    const filetypes = /jpeg|jpg|png|gif|webp|mp4|webm|ogg/;
+    const filetypes = /jpeg|jpg|png|gif|webp|mp4|webm|ogg|mov|m4v/;
     // Check ext
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     // Check mime
-    const mimetype = filetypes.test(file.mimetype);
+    const mimetype = /jpeg|jpg|png|gif|webp|mp4|webm|ogg|quicktime|video/.test(file.mimetype);
 
-    if (mimetype && extname) {
+    if (mimetype || extname) {
         return cb(null, true);
     } else {
-        cb('Error: Images Only!');
+        cb(new Error('Only images (jpg, png, gif, webp) and videos (mp4, webm, ogg, mov) are allowed!'));
     }
 }
 
@@ -44,23 +44,20 @@ function checkFileType(file, cb) {
 router.post('/:key', protect, admin, (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: err });
+            return res.status(400).json({ message: err.message || err });
         } else {
             if (req.file == undefined) {
                 return res.status(400).json({ message: 'No file selected!' });
             } else {
                 try {
                     const key = req.params.key;
-                    // Construct URL (Assuming simple static serve)
-                    // const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-                    // Better to store relative path or full URL if domain is known. 
-                    // For localhost/port mapping issues, let's store relative path and handle on frontend or use env.
                     const imageUrl = `/uploads/${req.file.filename}`;
+                    const isVideo = /\.(mp4|webm|ogg|mov|m4v)$/i.test(req.file.filename);
 
                     // Update or Insert in SiteConfig
                     const config = await SiteConfig.findOneAndUpdate(
                         { key },
-                        { value: imageUrl, type: 'image' },
+                        { value: imageUrl, type: isVideo ? 'video' : 'image' },
                         { new: true, upsert: true }
                     );
 
@@ -82,15 +79,17 @@ router.post('/:key', protect, admin, (req, res) => {
 router.post('/generic/file', protect, admin, (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: err });
+            return res.status(400).json({ message: err.message || err });
         } else {
             if (req.file == undefined) {
                 return res.status(400).json({ message: 'No file selected!' });
             } else {
                 const imageUrl = `/uploads/${req.file.filename}`;
+                const isVideo = /\.(mp4|webm|ogg|mov|m4v)$/i.test(req.file.filename);
                 res.json({
                     message: 'File uploaded successfully',
-                    url: imageUrl
+                    url: imageUrl,
+                    type: isVideo ? 'video' : 'image'
                 });
             }
         }

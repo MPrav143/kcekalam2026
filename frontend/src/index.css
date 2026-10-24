@@ -1,0 +1,425 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@600;700;800;900&family=Poppins:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+    /* KALAM Official 6 Color Families Extracted From Logo */
+    --color-kalam-yellow: #F2D10A;
+    --color-kalam-golden: #F5A623;
+    --color-kalam-orange: #F47721;
+    --color-kalam-coral: #F04438;
+    --color-kalam-magenta: #D62C76;
+    --color-kalam-cyan: #24BCE0;
+
+    /* KALAM Deep Atmospheric Background Bases */
+    --color-kalam-bg: #14050E;
+    --color-kalam-bg-deep: #10040B;
+    --color-kalam-bg-magenta: #180612;
+    --color-kalam-bg-cyan: #061A22;
+    --color-kalam-bg-coral: #160706;
+    --color-kalam-bg-orange: #180C03;
+    --color-kalam-bg-golden: #181103;
+
+    /* Typography System Tokens */
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Instrument Sans', sans-serif;
+    --font-accent: 'Poppins', sans-serif;
+    --font-editorial: 'Times New Roman', Times, serif;
+    --font-decorative: 'Algerian', 'Space Grotesk', sans-serif;
+
+    /* Compatibility Aliases */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-sans: 'Instrument Sans', sans-serif;
+    --font-inter: 'Instrument Sans', sans-serif;
+    --font-sora: 'Space Grotesk', sans-serif;
+
+    --animate-fadeInUp: fadeInUp 0.8s ease-out forwards;
+    --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --animate-spin-slow: spin 16s linear infinite;
+    --animate-float: float 6s ease-in-out infinite;
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 30px, 0);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-12px);
+        }
+    }
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--navbar-height, 4rem);
+    overflow-x: hidden;
+}
+
+:root {
+    --navbar-height: 4rem;
+    color-scheme: dark;
+    background-color: #14050E;
+    color: #ffffff;
+
+    --kalam-yellow: #F2D10A;
+    --kalam-golden: #F5A623;
+    --kalam-orange: #F47721;
+    --kalam-coral: #F04438;
+    --kalam-magenta: #D62C76;
+    --kalam-cyan: #24BCE0;
+
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Instrument Sans', sans-serif;
+    --font-accent: 'Poppins', sans-serif;
+    --font-editorial: 'Times New Roman', Times, serif;
+    --font-decorative: 'Algerian', 'Space Grotesk', sans-serif;
+}
+
+body {
+    background-color: #14050E;
+    background-image: 
+        radial-gradient(circle at 15% 15%, rgba(214, 44, 118, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(36, 188, 224, 0.16) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(240, 68, 56, 0.10) 0%, transparent 55%),
+        radial-gradient(circle at 18% 80%, rgba(244, 119, 33, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 82% 85%, rgba(245, 166, 35, 0.10) 0%, transparent 45%),
+        linear-gradient(155deg, #160610 0%, #051821 40%, #180807 75%, #180C03 100%);
+    background-attachment: fixed;
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* When a background image/video is active, eliminate background colors, colored radial gradients, and grids */
+body.has-page-bg {
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+body.has-page-bg #root,
+body.has-page-bg .bg-cosmic-grid,
+body.has-page-bg .bg-polygon-grid {
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* Glassmorphism System - KALAM 6 Colors Exclusively */
+.glass-panel {
+    background: rgba(22, 6, 17, 0.78);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(36, 188, 224, 0.22);
+}
+
+.glass-panel-magenta {
+    background: rgba(214, 44, 118, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(214, 44, 118, 0.35);
+}
+
+.glass-panel-cyan {
+    background: rgba(36, 188, 224, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(36, 188, 224, 0.35);
+}
+
+.glass-panel-coral {
+    background: rgba(240, 68, 56, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(240, 68, 56, 0.35);
+}
+
+.glass-panel-orange {
+    background: rgba(244, 119, 33, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(244, 119, 33, 0.35);
+}
+
+.glass-panel-golden {
+    background: rgba(245, 166, 35, 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(245, 166, 35, 0.35);
+}
+
+.glass-panel-yellow {
+    background: rgba(242, 209, 10, 0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(242, 209, 10, 0.30);
+}
+
+/* Backward-compatibility aliases mapped strictly to KALAM 6 colors */
+.glass-panel-violet {
+    background: rgba(214, 44, 118, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(214, 44, 118, 0.38);
+}
+
+.glass-panel-emerald {
+    background: rgba(36, 188, 224, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(36, 188, 224, 0.38);
+}
+
+.glass-panel-blue {
+    background: rgba(36, 188, 224, 0.18);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(36, 188, 224, 0.35);
+}
+
+.glass-nav {
+    background: rgba(20, 5, 14, 0.88);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(214, 44, 118, 0.25);
+}
+
+.glass-card {
+    background: rgba(24, 7, 18, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(214, 44, 118, 0.18);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+    border-color: rgba(36, 188, 224, 0.5);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px -12px rgba(214, 44, 118, 0.35), 0 0 25px -5px rgba(36, 188, 224, 0.25);
+}
+
+/* Luminous Atmospheric Glows */
+.glow-magenta {
+    box-shadow: 0 0 35px -5px rgba(214, 44, 118, 0.55);
+}
+
+.glow-cyan {
+    box-shadow: 0 0 35px -5px rgba(36, 188, 224, 0.5);
+}
+
+.glow-coral {
+    box-shadow: 0 0 35px -5px rgba(240, 68, 56, 0.45);
+}
+
+.glow-orange {
+    box-shadow: 0 0 35px -5px rgba(244, 119, 33, 0.45);
+}
+
+.glow-golden {
+    box-shadow: 0 0 35px -5px rgba(245, 166, 35, 0.45);
+}
+
+.glow-yellow {
+    box-shadow: 0 0 30px -5px rgba(242, 209, 10, 0.4);
+}
+
+/* Legacy glow aliases mapped to KALAM 6 colors */
+.glow-violet {
+    box-shadow: 0 0 35px -5px rgba(214, 44, 118, 0.55);
+}
+
+.glow-purple {
+    box-shadow: 0 0 30px -5px rgba(214, 44, 118, 0.45);
+}
+
+.glow-emerald {
+    box-shadow: 0 0 30px -5px rgba(36, 188, 224, 0.45);
+}
+
+/* Atmospheric Polygonal & Radial Backgrounds Inspired by KALAM Geometric Facets */
+.bg-cosmic-grid {
+    background-image: 
+        radial-gradient(circle at 50% 12%, rgba(214, 44, 118, 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 85% 25%, rgba(36, 188, 224, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 15% 45%, rgba(240, 68, 56, 0.14) 0%, transparent 48%),
+        radial-gradient(circle at 80% 70%, rgba(244, 119, 33, 0.14) 0%, transparent 48%),
+        radial-gradient(circle at 25% 85%, rgba(245, 166, 35, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 65% 90%, rgba(242, 209, 10, 0.10) 0%, transparent 45%),
+        linear-gradient(rgba(36, 188, 224, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(214, 44, 118, 0.035) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+
+.bg-polygon-grid {
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(36, 188, 224, 0.20) 0%, transparent 55%),
+        radial-gradient(circle at 80% 30%, rgba(214, 44, 118, 0.20) 0%, transparent 50%),
+        radial-gradient(circle at 50% 65%, rgba(240, 68, 56, 0.14) 0%, transparent 50%),
+        radial-gradient(circle at 15% 85%, rgba(245, 166, 35, 0.12) 0%, transparent 45%),
+        linear-gradient(60deg, rgba(36, 188, 224, 0.03) 1px, transparent 1px),
+        linear-gradient(120deg, rgba(214, 44, 118, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(244, 119, 33, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 60px 104px, 60px 104px, 60px 52px;
+}
+
+/* Typography Utilities */
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+.font-body {
+    font-family: var(--font-body);
+}
+
+.font-accent {
+    font-family: var(--font-accent);
+}
+
+.font-editorial {
+    font-family: var(--font-editorial);
+}
+
+.font-decorative {
+    font-family: var(--font-decorative);
+}
+
+.font-display {
+    font-family: var(--font-heading);
+}
+
+.font-inter {
+    font-family: var(--font-body);
+}
+
+.font-sora {
+    font-family: var(--font-heading);
+}
+
+.font-rajdhani {
+    font-family: 'Rajdhani', var(--font-heading);
+}
+
+.font-orbitron {
+    font-family: 'Orbitron', var(--font-heading);
+}
+
+/* Inter bold text fallback utility for existing elements */
+.inter-bold-text {
+    font-family: var(--font-body);
+    font-weight: 700;
+}
+
+/* Consistent Responsive Typography Scales */
+.type-hero {
+    font-family: var(--font-heading);
+    font-size: clamp(2.25rem, 5vw + 1rem, 4.25rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+}
+
+.type-page-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.85rem, 3.5vw + 0.5rem, 3rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.type-section-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 2.5vw + 0.5rem, 2.25rem);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+}
+
+.type-card-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.15rem, 1.2vw + 0.5rem, 1.35rem);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.type-body-lead {
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 1.2vw + 0.2rem, 1.2rem);
+    font-weight: 400;
+    line-height: 1.65;
+}
+
+.type-body {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.type-caption {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.type-label {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.type-price {
+    font-family: var(--font-accent);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.type-editorial-quote {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Text Selection - KALAM Magenta */
+::selection {
+    background-color: #D62C76;
+    color: #ffffff;
+}
+
+/* ============================================================ */
+/* Premium Pass Card Animation: Shimmer Light Sweep             */
+/* ============================================================ */
+@keyframes passCardSweep {
+    0% {
+        transform: translateX(-160%) rotate(-45deg);
+    }
+    30%, 100% {
+        transform: translateX(220%) rotate(-45deg);
+    }
+}
+
+.pass-card-shimmer {
+    animation: passCardSweep 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pass-card-shimmer {
+        animation: none !important;
+    }
+}

@@ -3,6 +3,19 @@ const router = express.Router();
 const Pass = require('../models/Pass');
 const { protect, admin } = require('../middlewares/authMiddleware');
 
+// Helper to validate and sanitize color (hex or standard color name)
+function sanitizeColor(c) {
+    if (!c || typeof c !== 'string') return '#6D28D9';
+    const trimmed = c.trim();
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(trimmed)) {
+        return trimmed;
+    }
+    if (/^[a-zA-Z]{3,20}$/.test(trimmed)) {
+        return trimmed.toLowerCase();
+    }
+    return '#6D28D9';
+}
+
 // @desc    Get all passes
 // @route   GET /api/passes
 // @access  Public
@@ -20,7 +33,13 @@ router.get('/', async (req, res) => {
 // @access  Private/Admin
 router.post('/', protect, admin, async (req, res) => {
     try {
-        const pass = new Pass(req.body);
+        const passData = { ...req.body };
+        if (passData.color) {
+            passData.color = sanitizeColor(passData.color);
+        } else {
+            passData.color = '#6D28D9';
+        }
+        const pass = new Pass(passData);
         const createdPass = await pass.save();
         res.status(201).json(createdPass);
     } catch (error) {
@@ -33,16 +52,39 @@ router.post('/', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.put('/:id', protect, admin, async (req, res) => {
     try {
-        const { name, price, type, perks, color, isActive } = req.body;
+        const {
+            name,
+            price,
+            type,
+            perks,
+            color,
+            description,
+            isActive,
+            currency,
+            eventName,
+            eventYear,
+            buttonText,
+            registrationUrl,
+            customLogo,
+            themeConfig,
+        } = req.body;
         const pass = await Pass.findById(req.params.id);
 
         if (pass) {
-            pass.name = name || pass.name;
-            pass.price = price || pass.price;
-            pass.type = type || pass.type;
-            pass.perks = perks || pass.perks;
-            pass.color = color || pass.color;
-            pass.isActive = isActive !== undefined ? isActive : pass.isActive;
+            if (name !== undefined) pass.name = name;
+            if (price !== undefined) pass.price = price;
+            if (type !== undefined) pass.type = type;
+            if (perks !== undefined) pass.perks = perks;
+            if (description !== undefined) pass.description = description;
+            if (color !== undefined) pass.color = sanitizeColor(color);
+            if (isActive !== undefined) pass.isActive = isActive;
+            if (currency !== undefined) pass.currency = currency;
+            if (eventName !== undefined) pass.eventName = eventName;
+            if (eventYear !== undefined) pass.eventYear = eventYear;
+            if (buttonText !== undefined) pass.buttonText = buttonText;
+            if (registrationUrl !== undefined) pass.registrationUrl = registrationUrl;
+            if (customLogo !== undefined) pass.customLogo = customLogo;
+            if (themeConfig !== undefined) pass.themeConfig = themeConfig;
 
             const updatedPass = await pass.save();
             res.json(updatedPass);

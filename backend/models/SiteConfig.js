@@ -8,7 +8,7 @@ const siteConfigSchema = new mongoose.Schema({
     },
     value: {
         type: String, // URL or text content
-        required: true,
+        default: '',
     },
     type: {
         type: String,

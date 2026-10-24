@@ -28,15 +28,14 @@ const registerForEvent = async (req, res) => {
         }
 
         // 3. Generate Custom Ticket ID
-        let prefix = 'D'; // Default
+        let prefix = 'K'; // Default
         const passName = pass.name.toLowerCase();
 
         if (passName.includes('standard')) prefix = 'ST';
         else if (passName.includes('elite')) prefix = 'E';
         else if (passName.includes('pro')) prefix = 'P';
-        else if (passName.includes('dhruva pro')) prefix = 'D';
+        else if (passName.includes('kalam')) prefix = 'K';
         else if (passName.includes('cultural')) prefix = 'C';
-        else if (passName.includes('sports')) prefix = 'SP';
 
         const randomNum = Math.floor(100000 + Math.random() * 900000); // 6 digit random number
         const ticketId = `${prefix}${randomNum}`;
@@ -45,16 +44,8 @@ const registerForEvent = async (req, res) => {
         const QRCode = require('qrcode');
         const qrCodeData = await QRCode.toDataURL(ticketId);
 
-        // 5. Determine Amount (Dynamic for Sports)
+        // 5. Determine Amount
         let amountToPay = pass.price;
-        if (passName.includes('sports') && events.length > 0) {
-            // For sports, use the specific event's team price
-            // Assuming strict one event selection for sports pass as per UI
-            const sportsEvent = events[0];
-            if (sportsEvent.teamPrice && sportsEvent.teamPrice > 0) {
-                amountToPay = sportsEvent.teamPrice.toString(); // Convert to string to match schema
-            }
-        }
 
         // 6. Check Payment Status
         const enablePayment = process.env.ENABLE_PAYMENT === 'true';
