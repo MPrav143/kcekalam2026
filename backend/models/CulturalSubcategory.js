@@ -22,4 +22,6 @@ const culturalSubcategorySchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+culturalSubcategorySchema.index({ order: 1, name: 1 });
+
 module.exports = mongoose.model('CulturalSubcategory', culturalSubcategorySchema);

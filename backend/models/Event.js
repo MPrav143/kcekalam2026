@@ -6,6 +6,26 @@ const eventSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    eventId: {
+        type: String,
+        trim: true,
+        sparse: true,
+        index: true,
+    },
+    subCategory: {
+        type: String,
+        trim: true,
+    },
+    otherPrizes: [{
+        type: String,
+    }],
+    version: {
+        type: Number,
+        default: 1,
+    },
+    lastImportedAt: {
+        type: Date,
+    },
     description: {
         type: String,
         required: true,
@@ -111,6 +131,11 @@ const eventSchema = new mongoose.Schema({
         unique: true,
     }
 }, { timestamps: true });
+
+// Optimized indexes for high-concurrency sorting and category/department filtering
+eventSchema.index({ date: 1 });
+eventSchema.index({ category: 1, date: 1 });
+eventSchema.index({ department: 1, date: 1 });
 
 // Generate slug from title before saving
 eventSchema.pre('save', async function () {

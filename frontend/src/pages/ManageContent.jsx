@@ -7,10 +7,8 @@ import { getImageUrl } from '../utils/imageUtils';
 import { Save, Plus, Trash2, Pencil, Link as LinkIcon } from 'lucide-react';
 import { useGlobalConfig } from '../context/GlobalConfigContext';
 import { API_URL } from '../utils/config';
-import { useHasPageBackground } from '../components/PageBackground';
 
 const ManageContent = () => {
-    const hasBgImage = useHasPageBackground();
     const { refreshConfig, config: siteConfig } = useGlobalConfig();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('general');
@@ -173,6 +171,25 @@ const ManageContent = () => {
         }
     };
 
+    const deleteConfigImage = async (key, label) => {
+        if (!window.confirm(`Are you sure you want to delete the image for "${label || key}"? This will reset it to default.`)) return;
+        try {
+            await axios.post(`${API_URL}/content/config`, { key, value: '', type: 'image' }, getAuthConfig());
+            if (key === 'cat_technical_image') {
+                await axios.post(`${API_URL}/content/config`, { key: 'technical_card_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {});
+            } else if (key === 'cat_cultural_image') {
+                await axios.post(`${API_URL}/content/config`, { key: 'cultural_card_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {});
+            }
+            alert('Image deleted successfully!');
+            refreshConfig();
+            setImageValues(prev => ({ ...prev, [key]: '' }));
+            fetchData();
+        } catch (error) {
+            console.error(error);
+            alert('Error deleting image');
+        }
+    };
+
     // --- GENERIC LIST HANDLER (Sponsors/Clubs) ---
     const [itemForm, setItemForm] = useState({ name: '', logo: '', description: '', tier: 'Silver' });
     const [editingItem, setEditingItem] = useState(null);
@@ -282,20 +299,20 @@ const ManageContent = () => {
                 alert('Session expired. Please login again.');
                 navigate('/login');
             } else {
-                alert(error.response?.data?.message || 'Error saving department');
+                alert(error.response?.data?.message || 'Error saving category');
             }
         }
     };
 
     const deleteDept = async (id, code) => {
-        if (window.confirm(`Delete department "${code}"? Events associated with this department will retain their record.`)) {
+        if (window.confirm(`Delete category "${code}"? Events associated with this category will retain their record.`)) {
             try {
                 await axios.delete(`${API_URL}/content/departments/${id}`, getAuthConfig());
                 refreshConfig();
                 fetchData();
             } catch (error) {
                 if (error.response?.status === 401) navigate('/login');
-                else alert(error.response?.data?.message || 'Error deleting department');
+                else alert(error.response?.data?.message || 'Error deleting category');
             }
         }
     };
@@ -344,7 +361,7 @@ const ManageContent = () => {
 
     const tabs = [
         { id: 'general', label: 'General Info' },
-        { id: 'subcategories', label: 'Fest Subcategories & Depts' },
+        { id: 'subcategories', label: 'Fest Subcategories' },
         { id: 'home_media', label: 'Home Media' },
         { id: 'popup', label: 'Popup Images' },
         { id: 'contact', label: 'Contact Details' },
@@ -356,12 +373,15 @@ const ManageContent = () => {
     ];
 
     return (
-        <div className={`flex min-h-screen ${hasBgImage ? 'bg-transparent' : 'bg-[#14050E] bg-cosmic-grid'} text-white font-inter flex-col md:flex-row`}>
+        <div className="flex min-h-screen bg-[#14050E] text-white font-inter flex-col md:flex-row">
             <Sidebar />
             <div className="flex-1 flex flex-col lg:ml-64">
-                <main className="flex-1 p-4 lg:p-8 pt-20 lg:pt-8">
+                <main className="flex-1 p-4 lg:p-8 pt-20 lg:pt-8 relative z-10">
                     {loading ? (
-                        <Loader />
+                        <div className="flex flex-col items-center justify-center py-32 gap-4">
+                            <div className="w-12 h-12 border-4 border-[#D62C76] border-t-transparent rounded-full animate-spin" />
+                            <p className="text-gray-400 text-sm">Loading dynamic content configuration...</p>
+                        </div>
                     ) : (
                         <>
                             <header className="mb-8">
@@ -374,9 +394,9 @@ const ManageContent = () => {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${activeTab === tab.id
-                                            ? 'bg-gradient-to-r from-[#D62C76] to-[#F47721] text-white shadow-lg shadow-[#D62C76]/20'
-                                            : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                                        className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${activeTab === tab.id
+                                            ? 'bg-gradient-to-r from-[#D62C76] to-[#F47721] text-white shadow-lg shadow-[#D62C76]/25 border border-white/20'
+                                            : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5'
                                             }`}
                                     >
                                         {tab.label}
@@ -385,36 +405,56 @@ const ManageContent = () => {
                             </div>
 
                             {activeTab === 'general' && (
-                                <div className="max-w-xl space-y-4 animate-fadeIn">
-                                    <div>
-                                        <label className="block text-sm text-gray-400 mb-1">Website Name</label>
-                                        <input value={generalConfig.website_name} onChange={(e) => setGeneralConfig({ ...generalConfig, website_name: e.target.value })} placeholder="e.g. Kalam" className="w-full bg-black/20 border border-white/10 rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-gray-400 mb-1">Event Year</label>
-                                        <input value={generalConfig.event_year} onChange={(e) => setGeneralConfig({ ...generalConfig, event_year: e.target.value })} placeholder="e.g. 2025" className="w-full bg-black/20 border border-white/10 rounded-lg p-3" />
-                                    </div>
-                                    <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-bold text-white">Registration Status</label>
-                                            <p className="text-xs text-gray-400">Enable or disable all event registrations and pass purchases.</p>
+                                <div className="max-w-2xl space-y-6">
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md space-y-5">
+                                        <h3 className="text-lg font-bold text-white mb-2">General Site Settings</h3>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-300 mb-2">Website Name</label>
+                                            <input
+                                                value={generalConfig.website_name}
+                                                onChange={(e) => setGeneralConfig({ ...generalConfig, website_name: e.target.value })}
+                                                placeholder="e.g. Kalam"
+                                                className="w-full bg-black/40 border border-white/15 rounded-xl p-3.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#D62C76] transition-colors"
+                                            />
                                         </div>
-                                        <button
-                                            onClick={() => setGeneralConfig({ ...generalConfig, registration_open: generalConfig.registration_open === 'true' ? 'false' : 'true' })}
-                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${generalConfig.registration_open === 'true' ? 'bg-blue-600' : 'bg-gray-700'}`}
-                                        >
-                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${generalConfig.registration_open === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
-                                        </button>
-                                        <span className="text-sm font-bold">{generalConfig.registration_open === 'true' ? 'Open' : 'Closed'}</span>
-                                    </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-300 mb-2">Event Year</label>
+                                            <input
+                                                value={generalConfig.event_year}
+                                                onChange={(e) => setGeneralConfig({ ...generalConfig, event_year: e.target.value })}
+                                                placeholder="e.g. 2026"
+                                                className="w-full bg-black/40 border border-white/15 rounded-xl p-3.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#D62C76] transition-colors"
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-4 bg-black/30 p-4 rounded-xl border border-white/10">
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-bold text-white">Registration Status</label>
+                                                <p className="text-xs text-gray-400 mt-0.5">Enable or disable all event registrations and pass purchases across the entire website.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setGeneralConfig({ ...generalConfig, registration_open: generalConfig.registration_open === 'true' ? 'false' : 'true' })}
+                                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none cursor-pointer ${generalConfig.registration_open === 'true' ? 'bg-gradient-to-r from-emerald-500 to-green-600' : 'bg-gray-700'}`}
+                                            >
+                                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${generalConfig.registration_open === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            </button>
+                                            <span className={`text-sm font-bold ${generalConfig.registration_open === 'true' ? 'text-emerald-400' : 'text-gray-400'}`}>
+                                                {generalConfig.registration_open === 'true' ? 'Open' : 'Closed'}
+                                            </span>
+                                        </div>
 
-                                    <button onClick={() => {
-                                        saveConfig('website_name', generalConfig.website_name);
-                                        saveConfig('event_year', generalConfig.event_year);
-                                        saveConfig('registration_open', generalConfig.registration_open);
-                                    }} className="bg-blue-600 px-6 py-2 rounded-lg font-bold flex items-center gap-2">
-                                        <Save size={18} /> Save General Info
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                saveConfig('website_name', generalConfig.website_name);
+                                                saveConfig('event_year', generalConfig.event_year);
+                                                saveConfig('registration_open', generalConfig.registration_open);
+                                            }}
+                                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#D62C76] to-[#F47721] hover:opacity-95 text-white font-bold flex items-center gap-2 shadow-lg shadow-[#D62C76]/20 transition-all cursor-pointer"
+                                        >
+                                            <Save size={18} /> Save General Info
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
@@ -424,7 +464,7 @@ const ManageContent = () => {
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                                             <div>
                                                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                                    Fest Subcategories & Departments Management
+                                                    Fest Subcategories Management
                                                 </h2>
                                                 <p className="text-xs sm:text-sm text-gray-400 mt-1">
                                                     Changes made here instantly update the public Navbar, Homepage categories, Admin Sidebar, and Event Creation dropdowns.
@@ -441,7 +481,7 @@ const ManageContent = () => {
                                                         : 'text-gray-400 hover:text-white'
                                                         }`}
                                                 >
-                                                    Technical Departments ({departmentsList.length})
+                                                    Technical Categories ({departmentsList.length})
                                                 </button>
                                                 <button
                                                     type="button"
@@ -456,14 +496,14 @@ const ManageContent = () => {
                                             </div>
                                         </div>
 
-                                        {/* TECHNICAL DEPARTMENTS SECTION */}
+                                        {/* TECHNICAL CATEGORIES SECTION */}
                                         {subTab === 'technical' && (
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                                {/* Departments List (2 cols) */}
+                                                {/* Categories List (2 cols) */}
                                                 <div className="lg:col-span-2 space-y-4">
                                                     <div className="flex items-center justify-between">
                                                         <h3 className="text-base font-bold text-white/90">
-                                                            Active Technical Departments ({departmentsList.length})
+                                                            Active Technical Categories ({departmentsList.length})
                                                         </h3>
                                                         <span className="text-xs text-gray-400">Sorted by Order / Code</span>
                                                     </div>
@@ -513,7 +553,7 @@ const ManageContent = () => {
                                                                             });
                                                                         }}
                                                                         className="p-2 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded-lg transition-colors"
-                                                                        title="Edit Department"
+                                                                        title="Edit Category"
                                                                     >
                                                                         <Pencil size={14} />
                                                                     </button>
@@ -521,7 +561,7 @@ const ManageContent = () => {
                                                                         type="button"
                                                                         onClick={() => deleteDept(dept._id, dept.code)}
                                                                         className="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors"
-                                                                        title="Delete Department"
+                                                                        title="Delete Category"
                                                                     >
                                                                         <Trash2 size={14} />
                                                                     </button>
@@ -531,23 +571,23 @@ const ManageContent = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Department Add/Edit Form (1 col) */}
+                                                {/* Category Add/Edit Form (1 col) */}
                                                 <div className="bg-black/30 border border-white/10 p-6 rounded-xl h-fit sticky top-8">
                                                     <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
                                                         {editingDept ? <Pencil size={16} className="text-[#F5A623]" /> : <Plus size={16} className="text-[#F5A623]" />}
-                                                        {editingDept ? `Edit Department (${editingDept.code})` : 'Add New Department'}
+                                                        {editingDept ? `Edit Category (${editingDept.name || editingDept.code})` : 'Add New Technical Category'}
                                                     </h3>
 
                                                     <form onSubmit={handleDeptSubmit} className="space-y-4">
                                                         <div>
                                                             <label className="block text-xs font-semibold text-gray-400 mb-1">
-                                                                Department Code (Uppercase) *
+                                                                Category Code (Uppercase) *
                                                             </label>
                                                             <input
                                                                 type="text"
                                                                 value={deptForm.code}
                                                                 onChange={(e) => setDeptForm({ ...deptForm, code: e.target.value.toUpperCase() })}
-                                                                placeholder="e.g. AIML, CSE, ECE"
+                                                                placeholder="e.g. HACK, PAPER, WORKSHOP"
                                                                 className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm uppercase focus:border-[#F5A623] outline-none"
                                                                 required
                                                             />
@@ -555,13 +595,13 @@ const ManageContent = () => {
 
                                                         <div>
                                                             <label className="block text-xs font-semibold text-gray-400 mb-1">
-                                                                Full Department Name *
+                                                                Category Name *
                                                             </label>
                                                             <input
                                                                 type="text"
                                                                 value={deptForm.name}
                                                                 onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })}
-                                                                placeholder="e.g. Department of Artificial Intelligence"
+                                                                placeholder="e.g. Hackathon, Paper Presentation"
                                                                 className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm focus:border-[#F5A623] outline-none"
                                                                 required
                                                             />
@@ -608,7 +648,7 @@ const ManageContent = () => {
                                                                 type="submit"
                                                                 className="w-full bg-gradient-to-r from-[#F5A623] to-[#F47721] text-white font-bold py-2.5 rounded-lg text-sm hover:opacity-95 transition-opacity cursor-pointer shadow-lg shadow-[#F5A623]/20"
                                                             >
-                                                                {editingDept ? 'Update Department' : 'Save Department'}
+                                                                {editingDept ? 'Update Category' : 'Save Category'}
                                                             </button>
 
                                                             {editingDept && (
@@ -883,11 +923,21 @@ const ManageContent = () => {
                                                             className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2 text-xs text-gray-500 focus:text-white focus:border-blue-500 outline-none transition-colors"
                                                         />
                                                         <button
+                                                            type="button"
                                                             onClick={() => saveConfig(cat.key, imageValues[cat.key], 'image')}
-                                                            className="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg transition-colors"
+                                                            className="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg transition-colors cursor-pointer"
                                                             title="Save Image URL"
                                                         >
                                                             <Save size={16} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteConfigImage(cat.key, cat.label)}
+                                                            disabled={!imageValues[cat.key] && !siteConfig?.[cat.key]}
+                                                            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 p-2 rounded-lg transition-colors border border-red-500/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                                            title={`Delete ${cat.label} Image`}
+                                                        >
+                                                            <Trash2 size={16} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -918,11 +968,21 @@ const ManageContent = () => {
                                                             className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2 text-xs text-gray-500 focus:text-white focus:border-purple-500 outline-none transition-colors"
                                                         />
                                                         <button
+                                                            type="button"
                                                             onClick={() => saveConfig(`dept_${code}_image`, imageValues[`dept_${code}_image`], 'image')}
-                                                            className="bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-lg transition-colors"
+                                                            className="bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-lg transition-colors cursor-pointer"
                                                             title="Save Image URL"
                                                         >
                                                             <Save size={16} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteConfigImage(`dept_${code}_image`, `${code} Department`)}
+                                                            disabled={!imageValues[`dept_${code}_image`] && !siteConfig?.[`dept_${code}_image`]}
+                                                            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 p-2 rounded-lg transition-colors border border-red-500/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                                            title={`Delete ${code} Department Image`}
+                                                        >
+                                                            <Trash2 size={16} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -990,12 +1050,28 @@ const ManageContent = () => {
                                                         className="w-full bg-black/20 border border-white/10 rounded-lg p-2"
                                                     />
                                                 </div>
-                                                <button onClick={() => {
-                                                    saveConfig('about_logo', aboutLogo, 'image');
-                                                    saveConfig('about_logo_width', aboutLogoWidth, 'text');
-                                                }} className="bg-blue-600 px-4 py-2 rounded-lg font-bold text-sm">
-                                                    Save Logo Settings
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => {
+                                                        saveConfig('about_logo', aboutLogo, 'image');
+                                                        saveConfig('about_logo_width', aboutLogoWidth, 'text');
+                                                    }} className="bg-blue-600 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer hover:bg-blue-500 transition-colors">
+                                                        Save Logo Settings
+                                                    </button>
+                                                    {aboutLogo && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (window.confirm('Are you sure you want to delete the Kalam Logo?')) {
+                                                                    setAboutLogo('');
+                                                                    saveConfig('about_logo', '', 'image');
+                                                                }
+                                                            }}
+                                                            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-bold text-sm border border-red-500/30 transition-colors cursor-pointer"
+                                                        >
+                                                            Delete Logo
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -1050,9 +1126,25 @@ const ManageContent = () => {
                                                         placeholder="Image URL"
                                                     />
                                                 </div>
-                                                <button onClick={() => saveConfig('about_kce_image', aboutKceImage, 'image')} className="bg-purple-600 px-4 py-2 rounded-lg font-bold text-sm">
-                                                    Save KCE Image
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => saveConfig('about_kce_image', aboutKceImage, 'image')} className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer transition-colors">
+                                                        Save KCE Image
+                                                    </button>
+                                                    {aboutKceImage && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (window.confirm('Are you sure you want to delete the KCE Image?')) {
+                                                                    setAboutKceImage('');
+                                                                    saveConfig('about_kce_image', '', 'image');
+                                                                }
+                                                            }}
+                                                            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-bold text-sm border border-red-500/30 transition-colors cursor-pointer"
+                                                        >
+                                                            Delete Image
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -1114,14 +1206,34 @@ const ManageContent = () => {
                                                 <img src={getImageUrl(rulesBg)} alt="Rules Bg" className="w-full h-48 object-cover rounded-xl" />
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-3">
                                             <input
                                                 value={rulesBg}
                                                 onChange={(e) => setRulesBg(e.target.value)}
-                                                onBlur={() => saveConfig('rules_bg', rulesBg, 'image')}
                                                 placeholder="Background Image URL"
-                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2"
+                                                className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2 text-sm"
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => saveConfig('rules_bg', rulesBg, 'image')}
+                                                className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-bold text-sm cursor-pointer transition-colors"
+                                            >
+                                                Save
+                                            </button>
+                                            {rulesBg && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (window.confirm('Are you sure you want to delete the Rules Background Image?')) {
+                                                            setRulesBg('');
+                                                            saveConfig('rules_bg', '', 'image');
+                                                        }
+                                                    }}
+                                                    className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg font-bold text-sm border border-red-500/30 transition-colors cursor-pointer shrink-0"
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

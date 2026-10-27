@@ -64,4 +64,10 @@ const registrationSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Optimized indexes for lookup, idempotency verification, and admin aggregation
+registrationSchema.index({ email: 1, pass: 1 });
+registrationSchema.index({ events: 1 });
+registrationSchema.index({ paymentStatus: 1, createdAt: -1 });
+registrationSchema.index({ rollNumber: 1 });
+
 module.exports = mongoose.model('Registration', registrationSchema);

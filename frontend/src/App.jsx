@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { GlobalConfigProvider } from './context/GlobalConfigContext';
 import { Suspense, lazy } from 'react';
 import Loader from './components/Loader';
@@ -18,6 +18,7 @@ const ManageEvents = lazy(() => import('./pages/ManageEvents'));
 const ManageImages = lazy(() => import('./pages/ManageImages'));
 const ManagePasses = lazy(() => import('./pages/ManagePasses'));
 const ManageContent = lazy(() => import('./pages/ManageContent'));
+const ManageSheets = lazy(() => import('./pages/ManageSheets'));
 const Passes = lazy(() => import('./pages/Passes'));
 const RegisterEvent = lazy(() => import('./pages/RegisterEvent'));
 const EventSelection = lazy(() => import('./pages/EventSelection'));
@@ -25,11 +26,13 @@ const EventDetail = lazy(() => import('./pages/EventDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname === '/login' || location.pathname === '/signup';
   const hasBg = useHasPageBackground();
 
   return (
-    <div className={`min-h-screen ${hasBg ? 'bg-transparent' : 'bg-[#14050E]'} text-white selection:bg-[#D62C76] selection:text-white font-body relative`}>
-      <PageBackground />
+    <div className={`min-h-screen ${!isAdminRoute && hasBg ? 'bg-transparent' : 'bg-[#14050E]'} text-white selection:bg-[#D62C76] selection:text-white font-body relative`}>
+      {!isAdminRoute && <PageBackground />}
       <Suspense fallback={<Loader text="Loading KALAM 2026..." />}>
         <Routes>
           {/* Public Routes - Single Page Continuous Scroll */}
@@ -54,6 +57,7 @@ function AppContent() {
               { path: 'images', element: <ManageImages /> },
               { path: 'passes', element: <ManagePasses /> },
               { path: 'content', element: <ManageContent /> },
+              { path: 'sheets', element: <ManageSheets /> },
             ].map((route, index) => (
               <Route key={index} path={route.path} element={route.element} />
             ))}
@@ -74,7 +78,9 @@ function App() {
       <ScrollToTop />
       <GlobalConfigProvider>
         <GlobalNavigationLoader>
+
           <AppContent />
+
         </GlobalNavigationLoader>
       </GlobalConfigProvider>
     </Router>

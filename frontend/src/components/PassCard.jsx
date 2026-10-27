@@ -277,7 +277,7 @@ const PassCard = ({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             whileHover={!isPreview ? { y: -6, transition: { duration: 0.25 } } : {}}
-            className={`group relative mx-auto w-full max-w-[360px] h-full flex flex-col justify-between rounded-2xl sm:rounded-[2rem] select-none transition-all duration-300 p-3.5 sm:p-7 backdrop-blur-xl isolate overflow-hidden ${className}`}
+            className={`group relative mx-auto w-full max-w-[360px] h-full flex flex-col justify-between rounded-2xl sm:rounded-[2rem] select-none transition-all duration-300 p-2.5 sm:p-5 md:p-7 backdrop-blur-xl isolate overflow-hidden ${className}`}
             style={{
                 background: theme.bgGradient,
                 border: `1px solid ${theme.outerBorder}`,

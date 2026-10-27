@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Loader from '../components/Loader';
 import PassCard from '../components/PassCard';
+import ResponsiveCardGrid from '../components/ResponsiveCardGrid';
 import Doodles from '../components/Doodles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -17,16 +18,56 @@ export default function Passes({ embed = false }) {
     const navigate = useNavigate();
     const { config } = useGlobalConfig();
     const hasBgImage = useHasPageBackground();
-    const [passes, setPasses] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const PASSES_CACHE_KEY = 'kalam_passes_cache';
+    const PASSES_CACHE_TTL = 2 * 60 * 1000;
+
+    const [passes, setPasses] = useState(() => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            try {
+                const cached = JSON.parse(sessionStorage.getItem(PASSES_CACHE_KEY));
+                if (cached && Date.now() - cached.timestamp < PASSES_CACHE_TTL && Array.isArray(cached.data)) {
+                    return cached.data;
+                }
+            } catch {}
+        }
+        return [];
+    });
+    const [loading, setLoading] = useState(() => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            try {
+                const cached = JSON.parse(sessionStorage.getItem(PASSES_CACHE_KEY));
+                if (cached && Date.now() - cached.timestamp < PASSES_CACHE_TTL && Array.isArray(cached.data) && cached.data.length > 0) {
+                    return false;
+                }
+            } catch {}
+        }
+        return true;
+    });
 
     useEffect(() => {
         let active = true;
+        // Skip fetch if valid cache already initialized
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            try {
+                const cached = JSON.parse(sessionStorage.getItem(PASSES_CACHE_KEY));
+                if (cached && Date.now() - cached.timestamp < PASSES_CACHE_TTL && Array.isArray(cached.data) && cached.data.length > 0) {
+                    return;
+                }
+            } catch {}
+        }
+
         (async () => {
             try {
                 const { data } = await axios.get(`${API_URL}/passes`);
                 if (active) {
-                    setPasses(Array.isArray(data) ? data : []);
+                    const passList = Array.isArray(data) ? data : [];
+                    setPasses(passList);
+                    try {
+                        sessionStorage.setItem(PASSES_CACHE_KEY, JSON.stringify({
+                            timestamp: Date.now(),
+                            data: passList
+                        }));
+                    } catch {}
                 }
             } catch (error) {
                 console.error('Error fetching passes:', error);
@@ -99,16 +140,17 @@ export default function Passes({ embed = false }) {
                         <p className="text-sm text-[#D8D4F0]/70">There are no active admission passes available right now.</p>
                     </div>
                 ) : (
-                    <div className="mx-auto grid grid-cols-2 gap-2.5 sm:gap-6 lg:gap-8 max-w-5xl items-stretch justify-center">
-                        {passes.map((pass, index) => (
-                            <div
-                                key={pass._id || pass.id || index}
-                                className="flex w-full items-stretch justify-center min-w-0"
-                            >
+                    <ResponsiveCardGrid
+                        items={passes}
+                        maxCols={2}
+                        gap="gap-2.5 sm:gap-6 lg:gap-8"
+                        className="mx-auto max-w-5xl items-stretch justify-center"
+                        renderItem={(pass, index) => (
+                            <div className="flex w-full items-stretch justify-center h-full min-w-0">
                                 <PassCard pass={pass} variantIndex={index} actionLabel="GET MY PASS" className="w-full" />
                             </div>
-                        ))}
-                    </div>
+                        )}
+                    />
                 )}
             </main>
         </section>

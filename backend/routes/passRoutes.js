@@ -21,7 +21,8 @@ function sanitizeColor(c) {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const passes = await Pass.find({});
+        const passes = await Pass.find({}).lean();
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(passes);
     } catch (error) {
         res.status(500).json({ message: error.message });

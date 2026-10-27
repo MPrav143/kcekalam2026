@@ -5,7 +5,10 @@ const Event = require('../models/Event');
 // @access  Public
 const getEvents = async (req, res) => {
     try {
-        const events = await Event.find().sort({ date: 1 });
+        const events = await Event.find().sort({ date: 1 }).lean();
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
         res.json(events);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -22,13 +25,19 @@ const getEventById = async (req, res) => {
 
         // Check if ID is a valid MongoDB ObjectId
         if (id.match(/^[0-9a-fA-F]{24}$/)) {
-            event = await Event.findById(id);
-        } else {
-            // Otherwise search by slug
-            event = await Event.findOne({ slug: id });
+            event = await Event.findById(id).lean();
+        }
+        if (!event) {
+            // Otherwise search by slug or eventId
+            event = await Event.findOne({
+                $or: [{ slug: id }, { eventId: id }]
+            }).lean();
         }
 
         if (event) {
+            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.set('Pragma', 'no-cache');
+            res.set('Expires', '0');
             res.json(event);
         } else {
             res.status(404).json({ message: 'Event not found' });
@@ -44,23 +53,29 @@ const getEventById = async (req, res) => {
 const createEvent = async (req, res) => {
     try {
         const {
-            title, description, category, eventType, club, department,
+            eventId, title, description, category, subCategory, eventType, club, department,
             date, venue, image, pptTemplateUrl, registrationFee,
             coordinators, facultyCoordinators, studentCoordinators,
             artistName, timings, prize, rules, rounds,
-            winnerPrize, runnerPrize, generalPrize, fromTime, toTime, theme,
+            winnerPrize, runnerPrize, generalPrize, otherPrizes, fromTime, toTime, theme,
             resourcePerson, resourcePersonPosition, resourcePersonCompany,
             gender, teamPrice
         } = req.body;
 
+        const effectiveDepartment = department || subCategory || 'General';
+        const effectiveSubCategory = subCategory || department || '';
+        const prizesList = otherPrizes || generalPrize || [];
+
         const event = new Event({
+            eventId: eventId || undefined,
             title,
             description,
             category,
+            subCategory: effectiveSubCategory,
             eventType: eventType || 'Normal',
             club,
             theme: theme || [],
-            department,
+            department: effectiveDepartment,
             date,
             venue,
             image,
@@ -70,13 +85,14 @@ const createEvent = async (req, res) => {
             facultyCoordinators,
             studentCoordinators,
             artistName,
-            timings,
+            timings: timings || (fromTime && toTime ? `${fromTime} - ${toTime}` : ''),
             prize,
             rules,
             rounds,
             winnerPrize,
             runnerPrize,
-            generalPrize: generalPrize || [],
+            generalPrize: prizesList,
+            otherPrizes: prizesList,
             fromTime,
             toTime,
             resourcePerson,
@@ -106,22 +122,24 @@ const updateEvent = async (req, res) => {
             console.log('Update Event Body:', req.body);
 
             const {
-                title, description, category, eventType, club, department,
+                eventId, title, description, category, subCategory, eventType, club, department,
                 date, venue, image, pptTemplateUrl, registrationFee,
                 coordinators, facultyCoordinators, studentCoordinators,
                 artistName, timings, prize, rules, rounds,
-                winnerPrize, runnerPrize, generalPrize, fromTime, toTime, theme,
+                winnerPrize, runnerPrize, generalPrize, otherPrizes, fromTime, toTime, theme,
                 resourcePerson, resourcePersonPosition, resourcePersonCompany,
                 gender, teamPrice
             } = req.body;
 
+            if (eventId !== undefined) event.eventId = eventId;
             event.title = title || event.title;
             event.description = description || event.description;
             event.category = category || event.category;
+            if (subCategory !== undefined) event.subCategory = subCategory;
             if (eventType) event.eventType = eventType;
             event.club = club || event.club;
             event.theme = theme !== undefined ? theme : event.theme; // Safer check for array
-            event.department = department || event.department;
+            event.department = department || subCategory || event.department;
             event.date = date || event.date;
             event.venue = venue || event.venue;
             event.image = image || event.image;
@@ -137,7 +155,13 @@ const updateEvent = async (req, res) => {
             event.rounds = rounds || event.rounds;
             event.winnerPrize = winnerPrize || event.winnerPrize;
             event.runnerPrize = runnerPrize || event.runnerPrize;
-            event.generalPrize = generalPrize || event.generalPrize;
+            
+            const prizesList = otherPrizes !== undefined ? otherPrizes : generalPrize;
+            if (prizesList !== undefined) {
+                event.generalPrize = prizesList;
+                event.otherPrizes = prizesList;
+            }
+            
             event.fromTime = fromTime || event.fromTime;
             event.toTime = toTime || event.toTime;
             event.resourcePerson = resourcePerson || event.resourcePerson;
@@ -145,6 +169,7 @@ const updateEvent = async (req, res) => {
             event.resourcePersonCompany = resourcePersonCompany || event.resourcePersonCompany;
             event.gender = gender || event.gender;
             event.teamPrice = teamPrice !== undefined ? teamPrice : event.teamPrice;
+            event.version = (event.version || 1) + 1;
 
             const updatedEvent = await event.save();
             res.json(updatedEvent);

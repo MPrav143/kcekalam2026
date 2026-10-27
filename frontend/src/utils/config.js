@@ -1,4 +1,5 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_URL = import.meta.env.VITE_API_URL || 
+    (import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '')}/api` : 'http://localhost:5000/api');
 
 // Helper to get full URL including API prefix
 export const getApiUrl = (endpoint) => {
@@ -8,10 +9,8 @@ export const getApiUrl = (endpoint) => {
 };
 
 // Helper for static files (uploads)
-// Note: Vercel serverless functions don't persist uploads locally. 
-// You should use an external storage service (AWS S3, Cloudinary) for production.
-// For now, this points to the backend URL's upload folder.
-export const BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+    (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
 
 export const getUploadUrl = (path) => {
     if (!path) return '';

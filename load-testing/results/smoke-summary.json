@@ -1,0 +1,233 @@
+{
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+            "01_Home_Page_Visit": {
+                "name": "01_Home_Page_Visit",
+                "path": "::01_Home_Page_Visit",
+                "id": "3384ff70f696c5e7ebf566157e8f9bb0",
+                "groups": {},
+                "checks": {
+                        "Home HTML status is 200": {
+                            "path": "::01_Home_Page_Visit::Home HTML status is 200",
+                            "id": "f3627347b77f753e7741c732f94f68d1",
+                            "passes": 7,
+                            "fails": 0,
+                            "name": "Home HTML status is 200"
+                        },
+                        "bootstrap status is 200": {
+                            "fails": 0,
+                            "name": "bootstrap status is 200",
+                            "path": "::01_Home_Page_Visit::bootstrap status is 200",
+                            "id": "8b24311c387ebe47c21867152d9ec3db",
+                            "passes": 7
+                        },
+                        "bootstrap has config": {
+                            "path": "::01_Home_Page_Visit::bootstrap has config",
+                            "id": "14dc665115eb1c67e599d7e6b29a2440",
+                            "passes": 7,
+                            "fails": 0,
+                            "name": "bootstrap has config"
+                        },
+                        "events catalog is 200": {
+                            "id": "2bbf3a3603eb39afdc499577b2fc4e38",
+                            "passes": 7,
+                            "fails": 0,
+                            "name": "events catalog is 200",
+                            "path": "::01_Home_Page_Visit::events catalog is 200"
+                        },
+                        "ImageKit asset is 200": {
+                            "name": "ImageKit asset is 200",
+                            "path": "::01_Home_Page_Visit::ImageKit asset is 200",
+                            "id": "9642efb84fff30f43e6e603161df9f1e",
+                            "passes": 7,
+                            "fails": 0
+                        }
+                    }
+            },
+            "04_Browse_Departments": {
+                "name": "04_Browse_Departments",
+                "path": "::04_Browse_Departments",
+                "id": "09f3fc2d2df679a266aa0467768615f2",
+                "groups": {},
+                "checks": {
+                        "departments is 200": {
+                            "fails": 0,
+                            "name": "departments is 200",
+                            "path": "::04_Browse_Departments::departments is 200",
+                            "id": "ecfdd2d1eeb3098decaf25e6b48a4771",
+                            "passes": 7
+                        }
+                    }
+            },
+            "02_Browse_Passes": {
+                "name": "02_Browse_Passes",
+                "path": "::02_Browse_Passes",
+                "id": "7ac569875d4ca5086e8e36e2659787c0",
+                "groups": {},
+                "checks": {
+                        "passes list is 200": {
+                            "fails": 0,
+                            "name": "passes list is 200",
+                            "path": "::02_Browse_Passes::passes list is 200",
+                            "id": "40ccab5518b583871aa00226d6f65dfe",
+                            "passes": 7
+                        },
+                        "passes response has array": {
+                            "name": "passes response has array",
+                            "path": "::02_Browse_Passes::passes response has array",
+                            "id": "beba9c2494c11d5de3e7c62357117c58",
+                            "passes": 7,
+                            "fails": 0
+                        }
+                    }
+            },
+            "03_Event_Detail": {
+                "groups": {},
+                "checks": {
+                        "event detail is 200": {
+                            "fails": 0,
+                            "name": "event detail is 200",
+                            "path": "::03_Event_Detail::event detail is 200",
+                            "id": "02007bc7ab250368799503999a8c6b80",
+                            "passes": 7
+                        }
+                    },
+                "name": "03_Event_Detail",
+                "path": "::03_Event_Detail",
+                "id": "1a181a986220cd2c439cbcc10ccac1e6"
+            }
+        },
+        "checks": {},
+        "name": ""
+    },
+    "metrics": {
+        "http_reqs": {
+            "count": 50,
+            "rate": 1.6890988452266296
+        },
+        "http_req_duration": {
+            "p(95)": 226.23936999999938,
+            "avg": 67.28977,
+            "min": 5.8652,
+            "med": 44.33235,
+            "max": 680.8082,
+            "p(90)": 78.65547,
+            "thresholds": {
+                "p(95)<500": false,
+                "p(99)<1000": false
+            }
+        },
+        "http_req_tls_handshaking": {
+            "max": 56.415,
+            "p(90)": 0,
+            "p(95)": 15.39532499999992,
+            "avg": 2.8164299999999995,
+            "min": 0,
+            "med": 0
+        },
+        "group_duration": {
+            "avg": 2656.19315,
+            "min": 1079.7884,
+            "med": 2546.57635,
+            "max": 4340.3427,
+            "p(90)": 4290.4357899999995,
+            "p(95)": 4316.819675
+        },
+        "http_req_waiting": {
+            "p(95)": 226.0583649999994,
+            "avg": 66.947138,
+            "min": 5.8652,
+            "med": 43.838899999999995,
+            "max": 680.8082,
+            "p(90)": 77.75628
+        },
+        "checks": {
+            "passes": 63,
+            "fails": 0,
+            "value": 1
+        },
+        "iterations": {
+            "count": 7,
+            "rate": 0.23647383833172814
+        },
+        "data_sent": {
+            "count": 10012,
+            "rate": 338.2251527681803
+        },
+        "http_req_receiving": {
+            "max": 1.1179,
+            "p(90)": 1.0030299999999999,
+            "p(95)": 1.009695,
+            "avg": 0.24196200000000004,
+            "min": 0,
+            "med": 0
+        },
+        "iteration_duration": {
+            "avg": 10624.772599999998,
+            "min": 9058.8133,
+            "med": 10422.0743,
+            "max": 11929.5577,
+            "p(90)": 11834.47126,
+            "p(95)": 11882.01448
+        },
+        "http_req_failed": {
+            "fails": 50,
+            "passes": 0,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_sending": {
+            "avg": 0.10067,
+            "min": 0,
+            "med": 0,
+            "max": 0.9867,
+            "p(90)": 0.6575,
+            "p(95)": 0.7250849999999998
+        },
+        "http_req_connecting": {
+            "max": 68.486,
+            "p(90)": 1.311,
+            "p(95)": 11.182509999999958,
+            "avg": 3.340534000000001,
+            "min": 0,
+            "med": 0
+        },
+        "data_received": {
+            "count": 229722,
+            "rate": 7760.463298463036
+        },
+        "http_req_duration{expected_response:true}": {
+            "min": 5.8652,
+            "med": 44.33235,
+            "max": 680.8082,
+            "p(90)": 78.65547,
+            "p(95)": 226.23936999999938,
+            "avg": 67.28977
+        },
+        "http_req_blocked": {
+            "p(90)": 2.187000000000003,
+            "p(95)": 31.590249999999912,
+            "avg": 8.46039,
+            "min": 0,
+            "med": 0,
+            "max": 207.5193
+        },
+        "vus": {
+            "min": 1,
+            "max": 3,
+            "value": 1
+        },
+        "vus_max": {
+            "min": 3,
+            "max": 3,
+            "value": 3
+        }
+    },
+    "setup_data": {
+        "sampleEventId": "dance"
+    }
+}

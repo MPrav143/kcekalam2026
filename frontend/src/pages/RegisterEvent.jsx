@@ -245,12 +245,12 @@ const RegisterEvent = () => {
                                 </span>
                             </div>
 
-                            {/* Dept */}
+                            {/* Category */}
                             <div className="bg-[#180614]/80 backdrop-blur-sm border border-[#F47721]/30 rounded-2xl p-5 md:p-6 flex flex-col justify-center hover:border-[#F47721]/60 transition-all group">
                                 <span className="text-[#D8D4F0] text-lg md:text-xl font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <BookOpen size={24} className="text-[#24BCE0]" /> Department
+                                    <BookOpen size={24} className="text-[#24BCE0]" /> Category
                                 </span>
-                                <span className="text-lg md:text-xl font-bold text-white group-hover:text-[#24BCE0] transition-colors">{event.department || 'General'}</span>
+                                <span className="text-lg md:text-xl font-bold text-white group-hover:text-[#24BCE0] transition-colors">{(event.category === 'Technical' && event.eventType && event.eventType !== 'Normal') ? event.eventType : (event.subCategory || event.eventType || event.department || 'General')}</span>
                             </div>
 
                             {event.pptTemplateUrl && (

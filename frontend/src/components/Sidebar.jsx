@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, FileText, LogOut, Ticket, Image as ImageIcon, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Calendar, FileText, LogOut, Ticket, Image as ImageIcon, FileSpreadsheet, Menu, X } from 'lucide-react';
 import { useGlobalConfig } from '../context/GlobalConfigContext';
 import { DEPARTMENTS as DEFAULT_DEPTS, CULTURAL_SUBCATEGORIES as DEFAULT_SUBS } from '../utils/constants';
-import { useHasPageBackground } from './PageBackground';
 
 const Sidebar = () => {
-    const hasBgImage = useHasPageBackground();
     const { config, departments, culturalSubcategories } = useGlobalConfig();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,7 +35,7 @@ const Sidebar = () => {
                     { path: '/admin/events/Technical', label: 'All Technical' },
                     ...activeDepts.map(dept => ({
                         path: `/admin/events/Technical/${encodeURIComponent(dept.code)}`,
-                        label: dept.code
+                        label: dept.name || dept.code
                     }))
                 ]
             },
@@ -56,6 +54,7 @@ const Sidebar = () => {
             { path: '/admin/events', icon: Calendar, label: 'All Events' },
             { path: '/admin/passes', icon: Ticket, label: 'Manage Passes' },
             { path: '/admin/content', icon: FileText, label: 'Manage Content' },
+            { path: '/admin/sheets', icon: FileSpreadsheet, label: 'Google Sheets Sync' },
             { path: '/admin/images', icon: ImageIcon, label: 'Page Backgrounds & Cards' }
         ];
     };
@@ -73,7 +72,7 @@ const Sidebar = () => {
             </button>
 
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 z-40 w-64 h-screen ${hasBgImage ? 'bg-[#14050E]/80 backdrop-blur-2xl' : 'bg-[#14050E]/95 backdrop-blur-xl'} border-r border-[#D62C76]/20 flex flex-col p-6 overflow-y-auto custom-scrollbar select-none transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+            <aside className={`fixed inset-y-0 left-0 z-40 w-64 h-screen bg-[#14050E] border-r border-[#D62C76]/20 flex flex-col p-6 overflow-y-auto custom-scrollbar select-none transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
                 <div className="mb-10 flex items-center gap-3 shrink-0 mt-8 lg:mt-0">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D62C76] to-[#F47721] flex items-center justify-center font-bold text-white text-sm">
                         K

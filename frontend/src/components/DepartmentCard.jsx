@@ -28,46 +28,46 @@ const DepartmentCard = ({ dept, stats, totalEvents, accentColor = '#24BCE0', onC
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[#14050E] text-white/20">
-                        <Sparkles size={32} />
+                        <Sparkles size={24} className="sm:w-8 sm:h-8" />
                     </div>
                 )}
                 {/* Event Count Floating Badge */}
-                <div className="absolute top-2.5 right-2.5 z-10">
+                <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10">
                     <span
-                        className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider backdrop-blur-md shadow-md flex items-center gap-1 text-white"
+                        className="px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold uppercase tracking-wider backdrop-blur-md shadow-md flex items-center gap-1 text-white"
                         style={{
                             backgroundColor: isCyan ? 'rgba(36, 188, 224, 0.85)' : 'rgba(214, 44, 118, 0.85)',
                             border: `1px solid ${isCyan ? '#24BCE0' : '#D62C76'}`
                         }}
                     >
-                        <Calendar size={11} />
-                        {eventCount} {eventCount === 1 ? 'Event' : 'Events'}
+                        <Calendar size={10} className="sm:w-[11px] sm:h-[11px] shrink-0" />
+                        <span>{eventCount} {eventCount === 1 ? 'Event' : 'Events'}</span>
                     </span>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#180715] via-transparent to-transparent opacity-80" />
             </div>
 
             {/* Bottom Section - Content (Category Name & Total Count) */}
-            <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between rounded-xl bg-[#180715]/90 backdrop-blur-xl border-t border-white/5 cursor-pointer group-hover:bg-[#1e0819] transition-all duration-300">
+            <div className="flex-1 p-2.5 sm:p-4 md:p-5 flex flex-col justify-between rounded-xl bg-[#180715]/90 backdrop-blur-xl border-t border-white/5 cursor-pointer group-hover:bg-[#1e0819] transition-all duration-300">
                 <div className="w-full">
-                    <h3 className="text-base sm:text-lg font-bold text-white font-heading leading-tight group-hover:text-[#24BCE0] transition-colors duration-300 mb-1">
+                    <h3 className="text-xs sm:text-base md:text-lg font-bold text-white font-heading leading-snug sm:leading-tight group-hover:text-[#24BCE0] transition-colors duration-300 mb-0.5 sm:mb-1 line-clamp-2">
                         {dept?.name}
                     </h3>
                     {dept?.tagline && (
-                        <p className="text-xs text-[#D8D4F0]/70 font-body line-clamp-2 mt-0.5">
+                        <p className="text-[10px] sm:text-xs text-[#D8D4F0]/70 font-body line-clamp-1 sm:line-clamp-2 mt-0.5">
                             {dept.tagline}
                         </p>
                     )}
                 </div>
 
                 {/* Bottom Action Row - Simple & Direct */}
-                <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between w-full">
-                    <span className="text-[11px] font-medium text-[#D8D4F0]/80">
-                        Total {eventCount} {eventCount === 1 ? 'competition' : 'competitions'}
+                <div className="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-white/10 flex items-center justify-between w-full">
+                    <span className="text-[9px] sm:text-[11px] font-medium text-[#D8D4F0]/80 truncate mr-1">
+                        {eventCount} {eventCount === 1 ? 'event' : 'events'}
                     </span>
-                    <span className="text-xs font-bold text-white/90 group-hover:text-white flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
-                        View Events
-                        <ArrowRight size={13} className={isCyan ? 'text-[#24BCE0]' : 'text-[#D62C76]'} />
+                    <span className="text-[10px] sm:text-xs font-bold text-white/90 group-hover:text-white flex items-center gap-0.5 sm:gap-1 group-hover:translate-x-0.5 transition-all shrink-0">
+                        <span>Explore</span>
+                        <ArrowRight size={11} className={`sm:w-[13px] sm:h-[13px] ${isCyan ? 'text-[#24BCE0]' : 'text-[#D62C76]'}`} />
                     </span>
                 </div>
             </div>
