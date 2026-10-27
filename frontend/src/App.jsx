@@ -37,6 +37,7 @@ function AppContent() {
         <Routes>
           {/* Public Routes - Single Page Continuous Scroll */}
           <Route path="/" element={<Home />} />
+          <Route path="/index.html" element={<Navigate to="/" replace />} />
           <Route path="/events" element={<Navigate to="/#technical-events" replace />} />
           <Route path="/passes" element={<Passes embed={false} />} />
           <Route path="/about" element={<Navigate to="/#about" replace />} />
