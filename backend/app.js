@@ -45,7 +45,7 @@ app.use(cors({
         if (!origin) return callback(null, true);
 
         const isAllowed = allowedOrigins.includes(origin) ||
-            (typeof origin === 'string' && (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || origin.endsWith('.kcekalam.in') || origin.endsWith('.kcedhruva.in')));
+            (typeof origin === 'string' && (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) || origin.endsWith('.kcekalam.in') || origin.endsWith('.kcedhruva.in') || origin.endsWith('.onrender.com')));
 
         if (isAllowed) {
             callback(null, true);
