@@ -65,6 +65,8 @@ const passSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+passSchema.index({ isActive: 1, createdAt: -1 });
+
 if (mongoose.models.Pass) {
     delete mongoose.models.Pass;
 }

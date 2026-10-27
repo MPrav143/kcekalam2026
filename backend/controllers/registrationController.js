@@ -21,13 +21,33 @@ const registerForEvent = async (req, res) => {
             return res.status(404).json({ message: 'Pass not found' });
         }
 
-        // 2. Fetch Selected Events
-        const events = await Event.find({ _id: { $in: eventIds } });
+        // 2. Prevent Duplicate Registration (Idempotency)
+        if (email && passId) {
+            const cleanEmail = email.toLowerCase().trim();
+            const existingReg = await Registration.findOne({
+                email: cleanEmail,
+                pass: passId,
+                paymentStatus: { $in: ['Completed', 'Pending'] }
+            });
+            if (existingReg) {
+                return res.status(200).json({
+                    message: 'Registration already exists for this pass',
+                    registrationId: existingReg._id,
+                    ticketId: existingReg.ticketId,
+                    amount: existingReg.amount,
+                    paymentStatus: existingReg.paymentStatus,
+                    alreadyRegistered: true
+                });
+            }
+        }
+
+        // 3. Fetch Selected Events
+        const events = await Event.find({ _id: { $in: eventIds } }).lean();
         if (events.length !== eventIds.length) {
             return res.status(400).json({ message: 'One or more invalid event IDs found' });
         }
 
-        // 3. Generate Custom Ticket ID
+        // 4. Generate Collision-Resistant Custom Ticket ID
         let prefix = 'K'; // Default
         const passName = pass.name.toLowerCase();
 
@@ -37,17 +57,16 @@ const registerForEvent = async (req, res) => {
         else if (passName.includes('kalam')) prefix = 'K';
         else if (passName.includes('cultural')) prefix = 'C';
 
-        const randomNum = Math.floor(100000 + Math.random() * 900000); // 6 digit random number
-        const ticketId = `${prefix}${randomNum}`;
+        const timestampSuffix = Date.now().toString().slice(-4);
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        const ticketId = `${prefix}${timestampSuffix}${randomNum}`;
 
-        // 4. Generate QR Code
+        // 5. Generate QR Code
         const QRCode = require('qrcode');
         const qrCodeData = await QRCode.toDataURL(ticketId);
 
-        // 5. Determine Amount
+        // 6. Determine Amount & Payment Status
         let amountToPay = pass.price;
-
-        // 6. Check Payment Status
         const enablePayment = process.env.ENABLE_PAYMENT === 'true';
         const initialStatus = enablePayment ? 'Pending' : 'Completed';
 
@@ -55,10 +74,10 @@ const registerForEvent = async (req, res) => {
         const registration = new Registration({
             pass: passId,
             events: eventIds,
-            studentName,
-            rollNumber,
-            email,
-            phone,
+            studentName: studentName.trim(),
+            rollNumber: rollNumber ? rollNumber.trim() : '',
+            email: email.toLowerCase().trim(),
+            phone: phone ? phone.trim() : '',
             department,
             year,
             college,
@@ -71,26 +90,25 @@ const registerForEvent = async (req, res) => {
 
         const savedRegistration = await registration.save();
 
-        // 6. Log to Google Sheet (if payment bypassed)
-        if (!enablePayment) {
-            const { logToSheet } = require('../utils/googleSheets');
-            await logToSheet({
-                email,
-                studentName,
-                rollNumber,
-                year,
-                department,
-                phone,
-                college,
-                district,
-                passName: pass.name,
-                passId: passId,
-                amount: amountToPay,
-                paymentStatus: 'Bypassed/Completed',
-                ticketId: ticketId,
-                qrCode: qrCodeData
-            });
-        }
+        // 8. Log to Google Sheet asynchronously (Non-blocking: prevents external API delays)
+        const { logToSheet } = require('../utils/googleSheets');
+        logToSheet({
+            email: registration.email,
+            studentName: registration.studentName,
+            rollNumber: registration.rollNumber,
+            year: registration.year,
+            department: registration.department,
+            phone: registration.phone,
+            college: registration.college,
+            district: registration.district,
+            passName: pass.name,
+            passId: passId,
+            events: events.map(e => e.title),
+            amount: amountToPay,
+            paymentStatus: initialStatus,
+            ticketId: ticketId,
+            qrCode: qrCodeData
+        }).catch(err => console.error('[GoogleSheets] Registration sync error:', err.message));
 
         res.status(201).json({
             message: enablePayment ? 'Registration initiated' : 'Registration Completed',
@@ -263,9 +281,9 @@ const preRegister = async (req, res) => {
 
         const ticketId = `PRE${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Log to Google Sheet
+        // Log to Google Sheet asynchronously
         const { logToSheet } = require('../utils/googleSheets');
-        await logToSheet({
+        logToSheet({
             email,
             studentName,
             year,
@@ -279,7 +297,7 @@ const preRegister = async (req, res) => {
             paymentStatus: 'Pre-Registered',
             ticketId: ticketId,
             qrCode: '' // No QR code for pre-registrations
-        });
+        }).catch(err => console.error('[GoogleSheets] Pre-registration sync error:', err.message));
 
         res.status(201).json({ message: 'Interest registered successfully' });
     } catch (error) {
@@ -305,6 +323,32 @@ const verifyAttendance = async (req, res) => {
         const wasAlreadyMarked = registration.attended;
         registration.attended = true;
         await registration.save();
+
+        // Sync attendance mark to Google Sheet asynchronously
+        try {
+            const { logToSheet } = require('../utils/googleSheets');
+            logToSheet({
+                ticketId: registration.ticketId,
+                studentName: registration.studentName,
+                rollNumber: registration.rollNumber,
+                email: registration.email,
+                phone: registration.phone,
+                department: registration.department,
+                year: registration.year,
+                college: registration.college,
+                district: registration.district,
+                passName: registration.pass?.name || '',
+                passId: registration.pass?._id || '',
+                events: registration.events?.map(e => e.title || e.name || '') || [],
+                amount: registration.amount,
+                paymentStatus: registration.paymentStatus,
+                paymentId: registration.paymentId || '',
+                attended: true,
+                qrCode: registration.qrCode
+            }).catch(err => console.error('[GoogleSheets] Attendance sync error:', err.message));
+        } catch (syncErr) {
+            console.error('[GoogleSheets] Attendance sync initiation failed:', syncErr.message);
+        }
 
         res.json({
             message: wasAlreadyMarked ? 'Already marked as attended' : 'Attendance marked successfully',

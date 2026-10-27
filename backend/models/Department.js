@@ -23,4 +23,6 @@ const departmentSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+departmentSchema.index({ order: 1, code: 1 });
+
 module.exports = mongoose.model('Department', departmentSchema);

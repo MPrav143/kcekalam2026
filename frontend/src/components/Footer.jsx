@@ -142,9 +142,9 @@ const Footer = () => {
                 {clubs.length > 0 && (
                     <section className={`py-6 sm:py-8 ${hasBgImage ? 'bg-transparent' : 'bg-[#0e040c]/90'} border-y border-[#D62C76]/20`}>
                         <h3 className="text-xl sm:text-2xl font-bold text-center mb-6">Our Clubs</h3>
-                        <Marquee gradient={false} speed={40}>
-                            {clubs.map(club => (
-                                <div key={club._id} className="mx-2 md:mx-3 w-24 md:w-32 flex items-center justify-center hover:grayscale-0 transition-all opacity-100 hover:opacity-100">
+                        <Marquee gradient={false} speed={40} autoFill pauseOnHover>
+                            {clubs.map((club, idx) => (
+                                <div key={club._id || idx} className="mx-4 sm:mx-6 md:mx-8 w-24 md:w-32 flex items-center justify-center hover:grayscale-0 transition-all opacity-100 hover:opacity-100">
                                     <OptimizedImage
                                         src={club.logo}
                                         alt={club.name}

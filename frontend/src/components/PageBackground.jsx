@@ -4,6 +4,7 @@ import { useGlobalConfig } from '../context/GlobalConfigContext';
 import { getImageUrl } from '../utils/imageUtils';
 import OptimizedImage from './OptimizedImage';
 import { DEFAULT_PAGE_BACKGROUNDS } from '../utils/constants';
+import { useScreenSize, getIsMobile } from '../utils/useScreenSize';
 
 export const isVideoUrl = (url) => {
     if (!url || typeof url !== 'string') return false;
@@ -11,10 +12,13 @@ export const isVideoUrl = (url) => {
     return /\.(mp4|webm|ogg|mov|m4v)$/i.test(cleanUrl) || url.startsWith('data:video/');
 };
 
+/**
+ * Returns the logical background key for any visitor page or admin page route.
+ */
 export const getPageBackgroundKey = (pathname, search = '') => {
     if (!pathname) return 'global_bg';
-    // Admin portal & login have NO background image per user request
-    if (pathname.startsWith('/login') || pathname.startsWith('/admin')) {
+    // Admin portal & login routes do NOT have background images
+    if (pathname.startsWith('/login') || pathname.startsWith('/admin') || pathname.startsWith('/signup')) {
         return null;
     }
     if (pathname === '/') {
@@ -36,21 +40,55 @@ export const getPageBackgroundKey = (pathname, search = '') => {
 };
 
 /**
- * Resolves the active background media source for the given route from site configuration.
+ * Resolves the active background media source for the given route from site configuration,
+ * automatically switching between Desktop and Mobile background assets based on screen size.
  */
-export const getResolvedBackgroundUrl = (config, pathname = '', search = '', fallbackKey = '') => {
-    // Admin portal & login have NO background image
-    if (pathname.startsWith('/login') || pathname.startsWith('/admin')) {
-        return '';
-    }
+export const getResolvedBackgroundUrl = (config, pathname = '', search = '', fallbackKey = '', isMobile = false) => {
     if (!config && !DEFAULT_PAGE_BACKGROUNDS) return '';
-    // Home screen has distinct section-by-section backgrounds, avoid full-screen fixed image
-    if (pathname === '/' && !search) {
-        return '';
-    }
+
     const resolvedKey = getPageBackgroundKey(pathname, search);
     if (!resolvedKey) return '';
 
+    // Home screen has distinct section-by-section backgrounds; only show page-level background
+    // if specifically configured for home (home_bg / home_bg_mobile)
+    if (pathname === '/' && !search && !fallbackKey) {
+        const homeExplicit = isMobile
+            ? (config && config.home_bg_mobile && String(config.home_bg_mobile).trim()) ||
+              (config && config.home_bg && String(config.home_bg).trim()) ||
+              DEFAULT_PAGE_BACKGROUNDS.home_bg_mobile ||
+              DEFAULT_PAGE_BACKGROUNDS.home_bg || ''
+            : (config && config.home_bg && String(config.home_bg).trim()) ||
+              DEFAULT_PAGE_BACKGROUNDS.home_bg || '';
+
+        return homeExplicit;
+    }
+
+    if (isMobile) {
+        // 1. Mobile-specific configured keys
+        const mobileResolved =
+            (resolvedKey && config && config[`${resolvedKey}_mobile`] && String(config[`${resolvedKey}_mobile`]).trim()) ||
+            (fallbackKey && config && config[`${fallbackKey}_mobile`] && String(config[`${fallbackKey}_mobile`]).trim()) ||
+            (config && config.global_bg_mobile && String(config.global_bg_mobile).trim()) ||
+            (resolvedKey && DEFAULT_PAGE_BACKGROUNDS[`${resolvedKey}_mobile`]) ||
+            (fallbackKey && DEFAULT_PAGE_BACKGROUNDS[`${fallbackKey}_mobile`]) ||
+            DEFAULT_PAGE_BACKGROUNDS.global_bg_mobile ||
+            '';
+
+        if (mobileResolved) return mobileResolved;
+
+        // 2. Seamless Desktop fallback if mobile asset is not explicitly uploaded
+        return (
+            (resolvedKey && config && config[resolvedKey] && String(config[resolvedKey]).trim()) ||
+            (fallbackKey && config && config[fallbackKey] && String(config[fallbackKey]).trim()) ||
+            (config && config.global_bg && String(config.global_bg).trim()) ||
+            (resolvedKey && DEFAULT_PAGE_BACKGROUNDS[resolvedKey]) ||
+            (fallbackKey && DEFAULT_PAGE_BACKGROUNDS[fallbackKey]) ||
+            DEFAULT_PAGE_BACKGROUNDS.global_bg ||
+            ''
+        );
+    }
+
+    // Desktop view resolution
     return (
         (resolvedKey && config && config[resolvedKey] && String(config[resolvedKey]).trim()) ||
         (fallbackKey && config && config[fallbackKey] && String(config[fallbackKey]).trim()) ||
@@ -64,41 +102,93 @@ export const getResolvedBackgroundUrl = (config, pathname = '', search = '', fal
 
 /**
  * Hook to determine if the active route or global site has a custom background image/video.
- * Used by pages to cleanly disable background colors, glow orbs, and color grids.
+ * Used by visitor pages and admin pages to cleanly adapt background colors and surface glassmorphism.
  */
-export const useHasPageBackground = () => {
-    const { config } = useGlobalConfig();
+export const useHasPageBackground = (explicitPageKey = null) => {
     const location = useLocation();
-    const rawMediaUrl = getResolvedBackgroundUrl(config, location.pathname, location.search);
+    if (location.pathname.startsWith('/login') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/signup')) {
+        return false;
+    }
+    const { config } = useGlobalConfig();
+    const { isMobile } = useScreenSize();
+    const rawMediaUrl = getResolvedBackgroundUrl(
+        config,
+        location.pathname,
+        location.search,
+        explicitPageKey,
+        isMobile
+    );
     return Boolean(rawMediaUrl && rawMediaUrl.trim().length > 0);
 };
 
 const PageBackground = ({ pageKey, fallbackKey, className = '' }) => {
-    const { config } = useGlobalConfig();
     const location = useLocation();
+    if (location.pathname.startsWith('/login') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/signup')) {
+        return null;
+    }
+    const { config } = useGlobalConfig();
+    const { isMobile } = useScreenSize();
     const [failedUrls, setFailedUrls] = useState({});
 
-    const isAdminOrLogin = Boolean(location.pathname.startsWith('/login') || location.pathname.startsWith('/admin'));
-    const isHomeWithoutExplicitBg = Boolean(location.pathname === '/' && !pageKey && !location.search);
+    const isHomeWithoutExplicitBg = Boolean(
+        location.pathname === '/' &&
+        !pageKey &&
+        !location.search &&
+        !(config && (config.home_bg || config.home_bg_mobile))
+    );
 
-    // Determine the active config key safely without early returns
-    const resolvedKey = (!isAdminOrLogin && !isHomeWithoutExplicitBg)
+    // Determine the active config key safely
+    const resolvedKey = !isHomeWithoutExplicitBg
         ? (pageKey || getPageBackgroundKey(location.pathname, location.search))
         : null;
 
-    // 1. Configured custom URL
-    const configuredUrl =
-        (config && resolvedKey && config[resolvedKey] && String(config[resolvedKey]).trim()) ||
-        (fallbackKey && config && config[fallbackKey] && String(config[fallbackKey]).trim()) ||
-        '';
+    // Resolve URL with Screen-Size Detection (Desktop vs Mobile)
+    let configuredUrl = '';
+    let defaultUrl = '';
 
-    // 2. Default verified URL
-    const defaultUrl =
-        (resolvedKey && DEFAULT_PAGE_BACKGROUNDS[resolvedKey]) ||
-        (fallbackKey && DEFAULT_PAGE_BACKGROUNDS[fallbackKey]) ||
-        (!isAdminOrLogin && config && config.global_bg && String(config.global_bg).trim()) ||
-        (!isAdminOrLogin && DEFAULT_PAGE_BACKGROUNDS.global_bg) ||
-        '';
+    if (isMobile) {
+        // Check mobile keys first
+        configuredUrl =
+            (config && resolvedKey && config[`${resolvedKey}_mobile`] && String(config[`${resolvedKey}_mobile`]).trim()) ||
+            (fallbackKey && config && config[`${fallbackKey}_mobile`] && String(config[`${fallbackKey}_mobile`]).trim()) ||
+            (config && config.global_bg_mobile && String(config.global_bg_mobile).trim()) ||
+            '';
+
+        defaultUrl =
+            (resolvedKey && DEFAULT_PAGE_BACKGROUNDS[`${resolvedKey}_mobile`]) ||
+            (fallbackKey && DEFAULT_PAGE_BACKGROUNDS[`${fallbackKey}_mobile`]) ||
+            DEFAULT_PAGE_BACKGROUNDS.global_bg_mobile ||
+            '';
+
+        // Fallback to desktop if mobile not provided
+        if (!configuredUrl) {
+            configuredUrl =
+                (config && resolvedKey && config[resolvedKey] && String(config[resolvedKey]).trim()) ||
+                (fallbackKey && config && config[fallbackKey] && String(config[fallbackKey]).trim()) ||
+                (config && config.global_bg && String(config.global_bg).trim()) ||
+                '';
+        }
+        if (!defaultUrl) {
+            defaultUrl =
+                (resolvedKey && DEFAULT_PAGE_BACKGROUNDS[resolvedKey]) ||
+                (fallbackKey && DEFAULT_PAGE_BACKGROUNDS[fallbackKey]) ||
+                DEFAULT_PAGE_BACKGROUNDS.global_bg ||
+                '';
+        }
+    } else {
+        // Desktop view
+        configuredUrl =
+            (config && resolvedKey && config[resolvedKey] && String(config[resolvedKey]).trim()) ||
+            (fallbackKey && config && config[fallbackKey] && String(config[fallbackKey]).trim()) ||
+            (config && config.global_bg && String(config.global_bg).trim()) ||
+            '';
+
+        defaultUrl =
+            (resolvedKey && DEFAULT_PAGE_BACKGROUNDS[resolvedKey]) ||
+            (fallbackKey && DEFAULT_PAGE_BACKGROUNDS[fallbackKey]) ||
+            DEFAULT_PAGE_BACKGROUNDS.global_bg ||
+            '';
+    }
 
     const rawMediaUrl = (!failedUrls[configuredUrl] && configuredUrl)
         ? configuredUrl
@@ -106,9 +196,9 @@ const PageBackground = ({ pageKey, fallbackKey, className = '' }) => {
             ? defaultUrl
             : '';
 
-    const hasMedia = Boolean(!isAdminOrLogin && !isHomeWithoutExplicitBg && rawMediaUrl && rawMediaUrl.trim().length > 0);
+    const hasMedia = Boolean(!isHomeWithoutExplicitBg && rawMediaUrl && rawMediaUrl.trim().length > 0);
 
-    // Keep body class in sync so global CSS removes any background colors - Hook called unconditionally on every render
+    // Keep body class in sync so global CSS removes any conflicting background colors
     useEffect(() => {
         if (hasMedia) {
             document.body.classList.add('has-page-bg');
@@ -132,33 +222,34 @@ const PageBackground = ({ pageKey, fallbackKey, className = '' }) => {
     const isVideo = isVideoUrl(rawMediaUrl);
 
     return (
-        <div className={`fixed inset-0 z-0 pointer-events-none overflow-hidden select-none ${className}`}>
+        <div
+            className={`fixed inset-0 z-0 pointer-events-none overflow-hidden select-none ${className}`}
+            style={{ height: '100dvh' }}
+        >
             {isVideo ? (
                 <video
-                    key={resolvedUrl}
+                    key={`${resolvedUrl}-${isMobile ? 'm' : 'd'}`}
                     src={resolvedUrl}
                     autoPlay
                     loop
                     muted
                     playsInline
                     onError={() => handleError(rawMediaUrl)}
-                    className="w-full h-full object-cover transition-opacity duration-700"
+                    className="w-full h-full object-cover object-center transition-opacity duration-700"
                 />
             ) : (
                 <OptimizedImage
-                    key={resolvedUrl}
+                    key={`${resolvedUrl}-${isMobile ? 'm' : 'd'}`}
                     src={rawMediaUrl}
                     alt="Page Background"
                     preset="PAGE_BG"
                     priority={true}
                     onError={() => handleError(rawMediaUrl)}
-                    className="w-full h-full object-cover transition-opacity duration-700"
+                    className="w-full h-full object-cover object-center transition-opacity duration-700"
                 />
             )}
         </div>
     );
 };
-
-
 
 export default PageBackground;

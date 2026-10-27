@@ -8,11 +8,43 @@ const Department = require('../models/Department');
 const CulturalSubcategory = require('../models/CulturalSubcategory');
 const { protect, admin } = require('../middlewares/authMiddleware');
 
+// --- CONSOLIDATED BOOTSTRAP (High Performance Single Roundtrip for Frontend Hydration) ---
+router.get('/bootstrap', async (req, res) => {
+    try {
+        const [configs, sponsors, clubs, depts, culturals] = await Promise.all([
+            SiteConfig.find({}).lean(),
+            Sponsor.find({}).lean(),
+            Club.find({}).lean(),
+            Department.find({}).sort({ order: 1, code: 1 }).lean(),
+            CulturalSubcategory.find({}).sort({ order: 1, name: 1 }).lean(),
+        ]);
+
+        const configMap = {};
+        configs.forEach(conf => {
+            configMap[conf.key] = conf.value;
+        });
+
+        // Set Edge & Browser Caching Headers (Fresh for 2m, Stale-while-revalidate for 10m)
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
+
+        res.json({
+            config: configMap,
+            sponsors,
+            clubs,
+            departments: depts,
+            culturalSubcategories: culturals
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // --- PAST EVENTS ---
 
 router.get('/pastEvents', async (req, res) => {
     try {
-        const events = await PastEvent.find({});
+        const events = await PastEvent.find({}).lean();
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(events);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -53,7 +85,8 @@ router.delete('/pastEvents/:id', protect, admin, async (req, res) => {
 
 router.get('/sponsors', async (req, res) => {
     try {
-        const sponsors = await Sponsor.find({});
+        const sponsors = await Sponsor.find({}).lean();
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(sponsors);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -94,7 +127,8 @@ router.delete('/sponsors/:id', protect, admin, async (req, res) => {
 
 router.get('/clubs', async (req, res) => {
     try {
-        const clubs = await Club.find({});
+        const clubs = await Club.find({}).lean();
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(clubs);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -176,11 +210,12 @@ const DEFAULT_CULTURAL_SUBCATEGORIES = [
 
 router.get('/departments', async (req, res) => {
     try {
-        let depts = await Department.find({}).sort({ order: 1, code: 1 });
+        let depts = await Department.find({}).sort({ order: 1, code: 1 }).lean();
         if (depts.length === 0) {
             await Department.insertMany(DEFAULT_DEPARTMENTS);
-            depts = await Department.find({}).sort({ order: 1, code: 1 });
+            depts = await Department.find({}).sort({ order: 1, code: 1 }).lean();
         }
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(depts);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -241,11 +276,12 @@ router.delete('/departments/:id', protect, admin, async (req, res) => {
 
 router.get('/cultural-subcategories', async (req, res) => {
     try {
-        let subs = await CulturalSubcategory.find({}).sort({ order: 1, name: 1 });
+        let subs = await CulturalSubcategory.find({}).sort({ order: 1, name: 1 }).lean();
         if (subs.length === 0) {
             await CulturalSubcategory.insertMany(DEFAULT_CULTURAL_SUBCATEGORIES);
-            subs = await CulturalSubcategory.find({}).sort({ order: 1, name: 1 });
+            subs = await CulturalSubcategory.find({}).sort({ order: 1, name: 1 }).lean();
         }
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(subs);
     } catch (error) {
         res.status(500).json({ message: error.message });

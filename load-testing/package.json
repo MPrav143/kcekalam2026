@@ -1,0 +1,21 @@
+{
+  "name": "kalam-load-testing",
+  "version": "1.0.0",
+  "description": "KALAM 2026 - Performance Engineering & Load Testing Suite",
+  "type": "module",
+  "scripts": {
+    "test:smoke": "node run.js smoke",
+    "test:ramp-up": "node run.js ramp-up",
+    "test:sustained": "node run.js sustained",
+    "test:spike": "node run.js spike",
+    "test:recovery": "node run.js recovery",
+    "test:admin": "node run.js admin"
+  },
+  "keywords": [
+    "load-testing",
+    "k6",
+    "performance",
+    "kalam2026"
+  ],
+  "license": "ISC"
+}

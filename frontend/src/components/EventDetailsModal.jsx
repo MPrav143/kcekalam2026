@@ -179,10 +179,10 @@ const EventDetailsModal = ({ event, onClose, showRegister = true, isAdminView = 
                             <h2 className="text-xl font-bold font-heading text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] line-clamp-2">
                                 {event.title}
                             </h2>
-                            {(event.department || event.club) && (
+                            {(event.eventType && event.eventType !== 'Normal' ? event.eventType : (event.subCategory || event.department || event.club)) && (
                                 <p className="text-xs text-[#FFE6A0] font-semibold mt-0.5 flex items-center gap-1 drop-shadow-md">
                                     <Building2 size={12} />
-                                    <span>{event.department || event.club}</span>
+                                    <span>{event.eventType && event.eventType !== 'Normal' ? event.eventType : (event.subCategory || event.department || event.club)}</span>
                                 </p>
                             )}
                         </div>
@@ -192,10 +192,10 @@ const EventDetailsModal = ({ event, onClose, showRegister = true, isAdminView = 
                     <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-7 space-y-4 custom-scrollbar text-white">
                         {/* Desktop Header */}
                         <div className="hidden md:block pr-8">
-                            {(event.department || event.club) && (
+                            {(event.eventType && event.eventType !== 'Normal' ? event.eventType : (event.subCategory || event.department || event.club)) && (
                                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#F5A623]/15 border border-[#F5A623]/35 text-[#FFE6A0] text-xs font-semibold tracking-wider uppercase mb-1.5">
                                     <Building2 size={12} />
-                                    <span>{event.department || event.club}</span>
+                                    <span>{event.eventType && event.eventType !== 'Normal' ? event.eventType : (event.subCategory || event.department || event.club)}</span>
                                 </div>
                             )}
                             <h2 id="modal-event-title" className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white leading-tight">
@@ -217,7 +217,7 @@ const EventDetailsModal = ({ event, onClose, showRegister = true, isAdminView = 
                         )}
 
                         {/* Quick Stats Grid (Date, Time, Venue, Fee, Team Size, Deadline) */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                             {formattedDate && (
                                 <div className="bg-[#1a0818]/85 p-2.5 sm:p-3 rounded-xl border border-[#24BCE0]/25 flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-lg bg-[#24BCE0]/20 flex items-center justify-center text-[#24BCE0] shrink-0">

@@ -37,7 +37,7 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-transparent text-white flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-[#14050E] text-white flex flex-col relative overflow-hidden">
             {/* Ambient KALAM glows */}
             <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#D62C76]/15 blur-3xl pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-[#24BCE0]/15 blur-3xl pointer-events-none" />

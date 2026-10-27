@@ -1,19 +1,17 @@
 require('dotenv').config();
 
+const mongoose = require('mongoose');
 const app = require('./app');
 const connectDB = require('./config/db');
 
-let isConnected = false;
-
-// Connect to database (only once per cold start)
+// Connect to database (reusing warm connection in serverless or local)
 const connectDatabase = async () => {
-    if (!isConnected) {
+    if (!mongoose.connection || mongoose.connection.readyState < 1) {
         try {
             await connectDB();
-            isConnected = true;
             console.log('MongoDB connected');
         } catch (error) {
-            console.error('Database connection failed:', error);
+            console.error('Database connection failed:', error.message);
             throw error;
         }
     }
@@ -32,5 +30,7 @@ if (require.main === module) {
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
+    }).catch(err => {
+        console.error('Initial server startup connection error:', err);
     });
 }

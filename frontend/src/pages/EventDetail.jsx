@@ -183,7 +183,7 @@ const EventDetail = () => {
                             )}
                             <p className="text-[#D8D4F0] text-sm sm:text-base flex items-center gap-2.5 font-body font-normal">
                                 <Building2 size={18} className="text-[#24BCE0]" />
-                                {event.department || event.club || 'General Event'}
+                                {(event.category === 'Technical' && event.eventType && event.eventType !== 'Normal') ? event.eventType : (event.subCategory || event.eventType || event.department || event.club || 'General Event')}
                             </p>
                         </div>
                     </div>
@@ -204,65 +204,65 @@ const EventDetail = () => {
                         </div>
 
                         <div className="space-y-12">                            {/* Stats Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="bg-[#180614]/80 p-6 rounded-2xl border border-[#24BCE0]/30 flex items-center gap-5 backdrop-blur-md">
-                                    <div className="w-12 h-12 rounded-xl bg-[#24BCE0]/20 border border-[#24BCE0]/30 flex items-center justify-center text-[#24BCE0]">
-                                        <Calendar size={24} />
+                            <div className="grid grid-cols-2 gap-2.5 sm:gap-6">
+                                <div className="bg-[#180614]/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-[#24BCE0]/30 flex items-center gap-2.5 sm:gap-5 backdrop-blur-md">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#24BCE0]/20 border border-[#24BCE0]/30 flex items-center justify-center text-[#24BCE0] shrink-0">
+                                        <Calendar size={16} className="sm:w-6 sm:h-6" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-1">Date</p>
-                                        <p className="font-semibold text-lg text-white">{event.date ? new Date(event.date).toLocaleDateString(undefined, { dateStyle: 'long' }) : ''}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] sm:text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-0.5 sm:mb-1 truncate">Date</p>
+                                        <p className="font-semibold text-xs sm:text-lg text-white truncate">{event.date ? new Date(event.date).toLocaleDateString(undefined, { dateStyle: 'long' }) : ''}</p>
                                     </div>
                                 </div>
-                                <div className="bg-[#180614]/80 p-6 rounded-2xl border border-[#D62C76]/30 flex items-center gap-5 backdrop-blur-md">
-                                    <div className="w-12 h-12 rounded-xl bg-[#D62C76]/20 border border-[#D62C76]/30 flex items-center justify-center text-[#D62C76]">
-                                        <Clock size={24} />
+                                <div className="bg-[#180614]/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-[#D62C76]/30 flex items-center gap-2.5 sm:gap-5 backdrop-blur-md">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#D62C76]/20 border border-[#D62C76]/30 flex items-center justify-center text-[#D62C76] shrink-0">
+                                        <Clock size={16} className="sm:w-6 sm:h-6" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-1">Time</p>
-                                        <p className="font-semibold text-lg text-white">
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] sm:text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-0.5 sm:mb-1 truncate">Time</p>
+                                        <p className="font-semibold text-xs sm:text-lg text-white truncate">
                                             {(event.fromTime && event.toTime)
                                                 ? `${event.fromTime} - ${event.toTime}`
                                                 : (event.timings || event.time)}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="bg-[#180614]/80 p-6 rounded-2xl border border-[#F47721]/30 flex items-center gap-5 backdrop-blur-md">
-                                    <div className="w-12 h-12 rounded-xl bg-[#F47721]/20 border border-[#F47721]/30 flex items-center justify-center text-[#F47721]">
-                                        <MapPin size={24} />
+                                <div className="bg-[#180614]/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-[#F47721]/30 flex items-center gap-2.5 sm:gap-5 backdrop-blur-md">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#F47721]/20 border border-[#F47721]/30 flex items-center justify-center text-[#F47721] shrink-0">
+                                        <MapPin size={16} className="sm:w-6 sm:h-6" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-1">Venue</p>
-                                        <p className="font-semibold text-lg text-white">{event.venue}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] sm:text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-0.5 sm:mb-1 truncate">Venue</p>
+                                        <p className="font-semibold text-xs sm:text-lg text-white truncate">{event.venue}</p>
                                     </div>
                                 </div>
                                 {showPrizes && (
-                                    <div className="bg-[#180614]/80 p-6 rounded-2xl border border-[#F5A623]/35 flex items-center gap-5 backdrop-blur-md">
-                                        <div className="w-12 h-12 rounded-xl bg-[#F5A623]/20 border border-[#F5A623]/30 flex items-center justify-center text-[#F2D10A]">
-                                            <Tag size={24} />
+                                    <div className="bg-[#180614]/80 p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-[#F5A623]/35 flex items-center gap-2.5 sm:gap-5 backdrop-blur-md">
+                                        <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#F5A623]/20 border border-[#F5A623]/30 flex items-center justify-center text-[#F2D10A] shrink-0">
+                                            <Tag size={16} className="sm:w-6 sm:h-6" />
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-1">Prize Details</p>
-                                            <div className="space-y-1">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] sm:text-xs text-[#D8D4F0]/70 uppercase font-bold tracking-wider mb-0.5 sm:mb-1 truncate">Prize Details</p>
+                                            <div className="space-y-0.5 sm:space-y-1">
                                                 {isValidPrize(event.winnerPrize) && (
-                                                    <p className="font-bold text-lg text-[#F2D10A] flex items-center justify-between">
-                                                        <span>Winner:</span>
-                                                        <span>{event.winnerPrize}</span>
+                                                    <p className="font-bold text-xs sm:text-lg text-[#F2D10A] flex items-center justify-between gap-1">
+                                                        <span>Win:</span>
+                                                        <span className="truncate">{event.winnerPrize}</span>
                                                     </p>
                                                 )}
                                                 {isValidPrize(event.runnerPrize) && (
-                                                    <p className="font-semibold text-[#D8D4F0] flex items-center justify-between text-sm">
-                                                        <span>Runner:</span>
-                                                        <span>{event.runnerPrize}</span>
+                                                    <p className="font-semibold text-[#D8D4F0] flex items-center justify-between text-[11px] sm:text-sm gap-1">
+                                                        <span>Run:</span>
+                                                        <span className="truncate">{event.runnerPrize}</span>
                                                     </p>
                                                 )}
                                                 {!isValidPrize(event.winnerPrize) && !isValidPrize(event.runnerPrize) && isValidPrize(event.prize) && (
-                                                    <p className="font-bold text-lg text-[#F2D10A]">{event.prize}</p>
+                                                    <p className="font-bold text-xs sm:text-lg text-[#F2D10A] truncate">{event.prize}</p>
                                                 )}
                                                 {hasGeneralPrize && (
-                                                    <div className="pt-2 flex flex-wrap gap-2 mt-2 border-t border-[#D62C76]/20">
+                                                    <div className="pt-1 flex flex-wrap gap-1 mt-1 border-t border-[#D62C76]/20">
                                                         {event.generalPrize.filter(p => isNotEmpty(p)).map((p, idx) => (
-                                                            <span key={idx} className="bg-[#24BCE0]/20 text-[#24BCE0] text-[10px] px-2 py-0.5 rounded border border-[#24BCE0]/30 font-bold">{p}</span>
+                                                            <span key={idx} className="bg-[#24BCE0]/20 text-[#24BCE0] text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded border border-[#24BCE0]/30 font-bold truncate">{p}</span>
                                                         ))}
                                                     </div>
                                                 )}
@@ -357,16 +357,17 @@ const EventDetail = () => {
                                     <User size={24} />
                                     Event Coordinators
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
                                     {(event.facultyCoordinators || []).concat(event.studentCoordinators || []).map((c, idx) => (
-                                        <div key={idx} className="bg-[#180614]/85 p-5 rounded-2xl flex items-center gap-4 border border-[#24BCE0]/20 hover:border-[#D62C76]/40 hover:bg-[#D62C76]/10 transition-all group backdrop-blur-md">
-                                            <div className="w-14 h-14 rounded-full bg-[#D62C76]/25 border border-[#D62C76]/40 flex items-center justify-center font-bold text-xl text-[#D62C76] group-hover:bg-[#D62C76] group-hover:text-white transition-colors">
+                                        <div key={idx} className="bg-[#180614]/85 p-2.5 sm:p-5 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-4 border border-[#24BCE0]/20 hover:border-[#D62C76]/40 hover:bg-[#D62C76]/10 transition-all group backdrop-blur-md min-w-0">
+                                            <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-full bg-[#D62C76]/25 border border-[#D62C76]/40 flex items-center justify-center font-bold text-xs sm:text-xl text-[#D62C76] group-hover:bg-[#D62C76] group-hover:text-white transition-colors shrink-0">
                                                 {c.name?.charAt(0) || 'C'}
                                             </div>
-                                            <div>
-                                                <p className="text-lg font-bold text-white mb-1">{c.name}</p>
-                                                <a href={`tel:${c.phone}`} className="text-sm text-[#D8D4F0]/70 hover:text-[#24BCE0] flex items-center gap-2 transition-colors">
-                                                    <Phone size={14} className="text-[#24BCE0]" /> {c.phone}
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-xs sm:text-lg font-bold text-white mb-0.5 truncate">{c.name}</p>
+                                                <a href={`tel:${c.phone}`} className="text-[10px] sm:text-sm text-[#D8D4F0]/70 hover:text-[#24BCE0] flex items-center gap-1 sm:gap-2 transition-colors truncate">
+                                                    <Phone size={11} className="sm:w-3.5 sm:h-3.5 text-[#24BCE0] shrink-0" />
+                                                    <span className="truncate">{c.phone}</span>
                                                 </a>
                                             </div>
                                         </div>

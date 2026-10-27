@@ -101,12 +101,13 @@ router.post('/generic/file', protect, admin, (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const configs = await SiteConfig.find({});
+        const configs = await SiteConfig.find({}).lean();
         // Convert array to object for easier key-value access on frontend
         const configMap = {};
         configs.forEach(conf => {
             configMap[conf.key] = conf.value;
         });
+        res.set('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
         res.json(configMap);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch configs' });

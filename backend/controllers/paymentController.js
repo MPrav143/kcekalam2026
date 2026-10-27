@@ -61,9 +61,9 @@ const verifyPayment = async (req, res) => {
                     await sendRegistrationEmail(registration, registration.pass, registration.events);
                 } */
 
-                // Log to Google Sheet
+                // Log to Google Sheet asynchronously
                 const { logToSheet } = require('../utils/googleSheets');
-                await logToSheet({
+                logToSheet({
                     email: registration.email,
                     studentName: registration.studentName,
                     rollNumber: registration.rollNumber,
@@ -72,13 +72,15 @@ const verifyPayment = async (req, res) => {
                     phone: registration.phone,
                     college: registration.college,
                     district: registration.district,
-                    passName: registration.pass.name,
-                    passId: registration.pass._id,
+                    passName: registration.pass?.name || 'N/A',
+                    passId: registration.pass?._id || '',
+                    events: registration.events || [],
                     amount: registration.amount,
-                    paymentStatus: 'Paid',
+                    paymentStatus: 'Completed',
+                    paymentId: registration.paymentId,
                     ticketId: registration.ticketId,
                     qrCode: registration.qrCode
-                });
+                }).catch(err => console.error('[GoogleSheets] Payment verification sync error:', err.message));
 
                 // Trigger n8n Webhook for Automated Email/Reports
                 const n8nUrl = process.env.N8N_WEBHOOK_URL_CONFIRMATION;
@@ -107,15 +109,15 @@ const verifyPayment = async (req, res) => {
 const handlePaymentFailed = async (req, res) => {
     try {
         const { registrationId, reason } = req.body;
-        const registration = await Registration.findById(registrationId).populate('pass');
+        const registration = await Registration.findById(registrationId).populate('pass').populate('events');
 
         if (registration) {
             registration.paymentStatus = 'Failed';
             await registration.save();
 
-            // Log to Google Sheet
+            // Log to Google Sheet asynchronously
             const { logToSheet } = require('../utils/googleSheets');
-            await logToSheet({
+            logToSheet({
                 email: registration.email,
                 studentName: registration.studentName,
                 rollNumber: registration.rollNumber,
@@ -124,14 +126,15 @@ const handlePaymentFailed = async (req, res) => {
                 phone: registration.phone,
                 college: registration.college,
                 district: registration.district,
-                passName: registration.pass.name,
-                passId: registration.pass._id,
+                passName: registration.pass?.name || 'N/A',
+                passId: registration.pass?._id || '',
+                events: registration.events || [],
                 amount: registration.amount,
                 paymentStatus: 'Failed',
                 ticketId: registration.ticketId,
                 qrCode: registration.qrCode,
                 reason: reason || 'Payment cancelled or failed'
-            });
+            }).catch(err => console.error('[GoogleSheets] Payment failure sync error:', err.message));
 
             res.json({ message: 'Payment failure recorded' });
         } else {

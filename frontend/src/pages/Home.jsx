@@ -14,20 +14,34 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import EventCard from '../components/EventCard';
 import DepartmentCard from '../components/DepartmentCard';
+import ResponsiveCardGrid from '../components/ResponsiveCardGrid';
 import EventDetailsModal from '../components/EventDetailsModal';
 import SectionBackground from '../components/SectionBackground';
-import About from './About';
 import PastEvents from '../components/PastEvents';
-import Passes from './Passes';
 import Doodles from '../components/Doodles';
-import Popup from '../components/Popup';
 import OptimizedImage from '../components/OptimizedImage';
+import Popup from '../components/Popup';
+import About from './About';
+import Passes from './Passes';
+
 
 const kalamLogo = 'https://ik.imagekit.io/kalam/About%20Page/Logo.png?updatedAt=1792635761882';
+const EVENTS_CACHE_KEY = 'kalam_events_cache';
+const EVENTS_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 const Home = () => {
     const { config, departments: globalDepartments, culturalSubcategories } = useGlobalConfig();
-    const [events, setEvents] = useState([]);
+    const [events, setEvents] = useState(() => {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            try {
+                const cached = JSON.parse(sessionStorage.getItem(EVENTS_CACHE_KEY));
+                if (cached && Date.now() - cached.timestamp < EVENTS_CACHE_TTL && Array.isArray(cached.data)) {
+                    return cached.data;
+                }
+            } catch { }
+        }
+        return [];
+    });
     const [selectedEvent, setSelectedEvent] = useState(null);
 
     // Three-Level Event Navigation State:
@@ -47,26 +61,26 @@ const Home = () => {
     const navigate = useNavigate();
 
     const departments = useMemo(() => {
-        const list = [...DEPARTMENTS];
-        if (Array.isArray(globalDepartments)) {
-            globalDepartments.forEach(d => {
-                const idx = list.findIndex(item => item.code?.toLowerCase() === d.code?.toLowerCase());
-                if (idx >= 0) {
-                    list[idx] = { ...list[idx], ...d };
-                } else {
-                    list.push(d);
-                }
-            });
+        if (Array.isArray(globalDepartments) && globalDepartments.length > 0) {
+            return globalDepartments;
         }
-        return list;
+        return DEPARTMENTS;
     }, [globalDepartments]);
 
-    // Fetch Events Data
+    // Fetch Events Data with caching
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const { data } = await axios.get(`${API_URL}/events`);
-                setEvents(Array.isArray(data) ? data : []);
+                const { data } = await axios.get(`${API_URL}/events?t=${Date.now()}`);
+                if (Array.isArray(data)) {
+                    setEvents(data);
+                    try {
+                        sessionStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify({
+                            timestamp: Date.now(),
+                            data
+                        }));
+                    } catch { }
+                }
             } catch (error) {
                 console.error('Failed to fetch events:', error);
             }
@@ -166,19 +180,20 @@ const Home = () => {
         return { technicalEvents: tech, culturalEvents: cult };
     }, [events]);
 
-    // Dynamic Admin-Driven Technical Categories (Departments list merged with any custom categories in events)
+    // Dynamic Admin-Driven Technical Categories (Categories list merged with any custom categories in events)
     const dynamicTechnicalCategories = useMemo(() => {
         const list = [...departments];
 
-        // Ensure any department present in events is represented
+        // Ensure any custom technical category present in events is represented
         technicalEvents.forEach((evt) => {
-            if (evt.department) {
-                const norm = normalizeDept(evt.department);
-                const exists = list.some(d => normalizeDept(d.code) === norm);
+            const catIdentifier = evt.subCategory || evt.eventType;
+            if (catIdentifier && catIdentifier !== 'Technical' && catIdentifier !== 'Normal') {
+                const norm = normalizeDept(catIdentifier);
+                const exists = list.some(d => normalizeDept(d.code) === norm || normalizeDept(d.name) === norm);
                 if (!exists) {
                     list.push({
-                        code: evt.department,
-                        name: evt.department.length <= 6 ? `Department of ${evt.department}` : evt.department,
+                        code: catIdentifier,
+                        name: catIdentifier,
                         image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80'
                     });
                 }
@@ -279,7 +294,13 @@ const Home = () => {
         if (activeEventType === 'Technical') {
             const normSelectedDept = normalizeDept(selectedCategory);
             return technicalEvents.filter((evt) => {
-                if (normalizeDept(evt.department) !== normSelectedDept && normalizeDept(evt.category) !== normSelectedDept) {
+                const matchesCategory =
+                    normalizeDept(evt.department) === normSelectedDept ||
+                    normalizeDept(evt.category) === normSelectedDept ||
+                    normalizeDept(evt.eventType) === normSelectedDept ||
+                    normalizeDept(evt.subCategory) === normSelectedDept;
+
+                if (!matchesCategory) {
                     return false;
                 }
 
@@ -320,9 +341,9 @@ const Home = () => {
     const selectedCategoryMeta = useMemo(() => {
         if (!selectedCategory) return null;
         if (activeEventType === 'Technical') {
-            const found = dynamicTechnicalCategories.find(d => normalizeDept(d.code) === normalizeDept(selectedCategory));
+            const found = dynamicTechnicalCategories.find(d => normalizeDept(d.code) === normalizeDept(selectedCategory) || normalizeDept(d.name) === normalizeDept(selectedCategory));
             return {
-                title: found?.name || `Department of ${selectedCategory}`,
+                title: found?.name || selectedCategory,
                 code: found?.code || selectedCategory,
                 type: 'Technical',
                 icon: Cpu,
@@ -386,9 +407,9 @@ const Home = () => {
 
                         {/* Hero Headline */}
                         <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading text-white leading-tight mb-3 sm:mb-4 max-w-4xl drop-shadow-[0_6px_24px_rgba(0,0,0,0.95)] animate-fadeInUp">
-                            Your First Year, <br className="hidden sm:inline" />
+                            The First Chapter of, <br className="hidden sm:inline" />
                             <span className="bg-gradient-to-r from-[#24BCE0] via-[#F2D10A] to-[#D62C76] bg-clip-text text-transparent">
-                                Your First Breakthrough
+                                An Engineer's Legacy
                             </span>
                         </h1>
 
@@ -636,13 +657,22 @@ const Home = () => {
                                     </p>
                                 </div>
 
-                                {/* Technical Categories Grid (Departments & Custom Tech Categories) */}
+                                {/* Technical Categories Grid */}
                                 {activeEventType === 'Technical' && (
                                     <div>
                                         {filteredTechnicalCategories.length > 0 ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                {filteredTechnicalCategories.map((dept) => {
-                                                    const deptEvents = technicalEvents.filter(e => normalizeDept(e.department) === normalizeDept(dept.code) || normalizeDept(e.category) === normalizeDept(dept.code));
+                                            <ResponsiveCardGrid
+                                                items={filteredTechnicalCategories}
+                                                maxCols={3}
+                                                tabletCols={2}
+                                                gap="gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
+                                                renderItem={(dept) => {
+                                                    const deptEvents = technicalEvents.filter(e =>
+                                                        normalizeDept(e.department) === normalizeDept(dept.code) ||
+                                                        normalizeDept(e.category) === normalizeDept(dept.code) ||
+                                                        normalizeDept(e.eventType) === normalizeDept(dept.code) ||
+                                                        normalizeDept(e.subCategory) === normalizeDept(dept.code)
+                                                    );
                                                     const totalEvents = deptEvents.length;
                                                     const displayImage = config[`dept_${dept.code}_image`] || dept.image;
 
@@ -658,12 +688,12 @@ const Home = () => {
                                                             }}
                                                         />
                                                     );
-                                                })}
-                                            </div>
+                                                }}
+                                            />
                                         ) : (
                                             <div className="text-center py-16 bg-[#180715]/40 rounded-3xl border border-white/5 p-8 max-w-md mx-auto">
                                                 <Cpu className="mx-auto mb-3 text-white/30" size={36} />
-                                                <p className="text-base text-white/80 font-medium">No departments matched "{categorySearchQuery}".</p>
+                                                <p className="text-base text-white/80 font-medium">No categories matched "{categorySearchQuery}".</p>
                                                 <button
                                                     onClick={() => setCategorySearchQuery('')}
                                                     className="mt-4 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-all flex items-center gap-1.5 mx-auto cursor-pointer"
@@ -679,8 +709,12 @@ const Home = () => {
                                 {activeEventType === 'Cultural' && (
                                     <div>
                                         {filteredCulturalCategories.length > 0 ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                {filteredCulturalCategories.map((cat) => {
+                                            <ResponsiveCardGrid
+                                                items={filteredCulturalCategories}
+                                                maxCols={3}
+                                                tabletCols={2}
+                                                gap="gap-2.5 sm:gap-4 md:gap-5 lg:gap-6"
+                                                renderItem={(cat) => {
                                                     const catEvents = culturalEvents.filter((e) => {
                                                         const normSub = (cat.code || '').toLowerCase().replace(/\s+/g, '');
                                                         const eventSub = (e.subCategory || e.eventType || e.department || '').toLowerCase().replace(/\s+/g, '');
@@ -701,8 +735,8 @@ const Home = () => {
                                                             }}
                                                         />
                                                     );
-                                                })}
-                                            </div>
+                                                }}
+                                            />
                                         ) : (
                                             <div className="text-center py-16 bg-[#180715]/40 rounded-3xl border border-white/5 p-8 max-w-md mx-auto">
                                                 <Music className="mx-auto mb-3 text-white/30" size={36} />
@@ -808,8 +842,12 @@ const Home = () => {
 
                                 {/* Grid of Event Cards */}
                                 {currentCategoryEvents.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-                                        {currentCategoryEvents.map((event) => (
+                                    <ResponsiveCardGrid
+                                        items={currentCategoryEvents}
+                                        maxCols={4}
+                                        tabletCols={2}
+                                        gap="gap-2.5 sm:gap-4 md:gap-5"
+                                        renderItem={(event) => (
                                             <EventCard
                                                 key={event._id || event.id}
                                                 event={event}
@@ -817,8 +855,8 @@ const Home = () => {
                                                 onRegister={(evt) => setSelectedEvent(evt)}
                                                 onView={(evt) => setSelectedEvent(evt)}
                                             />
-                                        ))}
-                                    </div>
+                                        )}
+                                    />
                                 ) : (
                                     <div className="text-center py-16 bg-[#180715]/40 rounded-3xl border border-white/5 p-8 max-w-md mx-auto">
                                         <Calendar className="mx-auto mb-3 text-white/30" size={36} />

@@ -24,9 +24,8 @@ import {
 import Sidebar from '../components/Sidebar';
 import Loader from '../components/Loader';
 import PassCard from '../components/PassCard';
-import { LUXURY_PRESETS, parseColor } from '../utils/passColorUtils';
+import { LUXURY_PRESETS, parseColor, findPresetById } from '../utils/passColorUtils';
 import { API_URL } from '../utils/config';
-import { useHasPageBackground } from '../components/PageBackground';
 
 const DEFAULT_PRESET = LUXURY_PRESETS[0];
 
@@ -94,13 +93,13 @@ const DEFAULT_FORM_DATA = {
 };
 
 const ManagePasses = () => {
-    const hasBgImage = useHasPageBackground();
     const [passes, setPasses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [currentPass, setCurrentPass] = useState(null);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('content'); // 'content' | 'colors' | 'design'
+    const [activePresetFilter, setActivePresetFilter] = useState('all'); // 'all' | 'classic' | 'bright'
 
     const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
 
@@ -143,7 +142,9 @@ const ManagePasses = () => {
         setCurrentPass(pass);
         const parsed = parseColor(pass.color);
         const tc = pass.themeConfig || {};
-        const matchedPreset = LUXURY_PRESETS.find(p => p.id === tc.presetId || p.primaryColor.toUpperCase() === parsed.hex.toUpperCase()) || DEFAULT_PRESET;
+        const matchedPreset = findPresetById(tc.presetId) ||
+            LUXURY_PRESETS.find(p => p.primaryColor.toUpperCase() === parsed.hex.toUpperCase() || p.accentColor.toUpperCase() === parsed.hex.toUpperCase()) ||
+            DEFAULT_PRESET;
 
         setFormData({
             name: pass.name || '',
@@ -217,15 +218,16 @@ const ManagePasses = () => {
     const handleSelectPreset = (preset) => {
         setFormData(prev => ({
             ...prev,
-            color: preset.primaryColor,
+            color: preset.accentColor || preset.primaryColor,
             themeConfig: {
                 ...prev.themeConfig,
                 presetId: preset.id,
                 backgroundColor: preset.backgroundColor,
                 secondaryBgColor: preset.secondaryBgColor,
                 primaryColor: preset.primaryColor,
-                secondaryColor: preset.secondaryColor,
+                secondaryColor: preset.secondaryColor || preset.highlightColor,
                 accentColor: preset.accentColor,
+                highlightColor: preset.highlightColor,
                 borderColor: preset.borderColor,
                 dividerColor: preset.dividerColor,
                 titleColor: preset.titleColor,
@@ -381,10 +383,10 @@ const ManagePasses = () => {
     };
 
     return (
-        <div className={`flex min-h-screen ${hasBgImage ? 'bg-transparent' : 'bg-[#0a0715]'} text-white`}>
+        <div className="flex min-h-screen bg-[#14050E] text-white">
             <Sidebar />
 
-            <div className="flex-1 flex flex-col lg:ml-64 p-6 md:p-10 max-w-7xl w-full">
+            <div className="flex-1 flex flex-col lg:ml-64 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 max-w-7xl w-full relative z-10">
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
@@ -421,7 +423,7 @@ const ManagePasses = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8">
                         {passes.map((pass) => (
                             <PassCard
                                 key={pass._id}
@@ -726,36 +728,94 @@ const ManagePasses = () => {
                                     <div className="space-y-6">
                                         {/* Curated Luxury Presets */}
                                         <div>
-                                            <div className="flex items-center justify-between mb-2.5">
-                                                <span className="text-xs font-semibold text-white uppercase tracking-wider block">
-                                                    Curated Luxury Color Presets
-                                                </span>
-                                                <span className="text-[11px] text-white/50">1-click complete palette setup</span>
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                                                <div>
+                                                    <span className="text-xs font-semibold text-white uppercase tracking-wider block">
+                                                        Curated Luxury Color Presets ({LUXURY_PRESETS.length})
+                                                    </span>
+                                                    <span className="text-[11px] text-white/50">1-click complete 5-color palette setup</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10 text-[11px]">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setActivePresetFilter('all')}
+                                                        className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                                                            activePresetFilter === 'all'
+                                                                ? 'bg-gradient-to-r from-[#D62C76] to-[#F47721] text-white shadow-sm'
+                                                                : 'text-white/60 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        All (24)
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setActivePresetFilter('classic')}
+                                                        className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                                                            activePresetFilter === 'classic'
+                                                                ? 'bg-white/20 text-white shadow-sm'
+                                                                : 'text-white/60 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        Classic (12)
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setActivePresetFilter('bright')}
+                                                        className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                                                            activePresetFilter === 'bright'
+                                                                ? 'bg-[#24BCE0]/30 text-[#42D9FF] border border-[#42D9FF]/40 shadow-sm'
+                                                                : 'text-white/60 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        Brighter (12)
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                                                {LUXURY_PRESETS.map((preset) => {
-                                                    const isSelected = formData.themeConfig?.presetId === preset.id;
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                                                {LUXURY_PRESETS.filter(p => {
+                                                    if (activePresetFilter === 'classic') return p.category !== 'BRIGHT LUXURY';
+                                                    if (activePresetFilter === 'bright') return p.category === 'BRIGHT LUXURY';
+                                                    return true;
+                                                }).map((preset) => {
+                                                    const isSelected = formData.themeConfig?.presetId === preset.id ||
+                                                        preset.aliases?.includes(formData.themeConfig?.presetId);
                                                     return (
                                                         <button
                                                             key={preset.id}
                                                             type="button"
                                                             onClick={() => handleSelectPreset(preset)}
-                                                            className={`p-3 rounded-2xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
+                                                            className={`p-3 rounded-2xl border text-left flex flex-col gap-1 transition-all cursor-pointer relative ${
                                                                 isSelected
                                                                     ? 'bg-white/10 border-white ring-2 ring-white/30 shadow-lg'
                                                                     : 'bg-white/[0.02] border-white/10 hover:border-white/30 hover:bg-white/[0.04]'
                                                             }`}
                                                         >
                                                             <div className="flex items-center justify-between w-full">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <span className="w-4 h-4 rounded-full border border-white/40 shadow-sm" style={{ backgroundColor: preset.backgroundColor }} title="Background" />
-                                                                    <span className="w-4 h-4 rounded-full border border-white/40 shadow-sm -ml-2" style={{ backgroundColor: preset.primaryColor }} title="Primary / Border" />
-                                                                    <span className="w-4 h-4 rounded-full border border-white/40 shadow-sm -ml-2" style={{ backgroundColor: preset.accentColor }} title="Accent / Glitter" />
+                                                                {/* 5-Color Swatch Dots */}
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm shrink-0" style={{ backgroundColor: preset.backgroundColor }} title={`Color 1 (Main Background): ${preset.backgroundColor}`} />
+                                                                    <span className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm -ml-1.5 shrink-0" style={{ backgroundColor: preset.secondaryBgColor }} title={`Color 2 (Surface / Card): ${preset.secondaryBgColor}`} />
+                                                                    <span className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm -ml-1.5 shrink-0" style={{ backgroundColor: preset.primaryColor || preset.accentColor }} title={`Color 3 (Primary Accent): ${preset.primaryColor || preset.accentColor}`} />
+                                                                    <span className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm -ml-1.5 shrink-0" style={{ backgroundColor: preset.highlightColor }} title={`Color 4 (Bright Highlight): ${preset.highlightColor}`} />
+                                                                    <span className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm -ml-1.5 shrink-0" style={{ backgroundColor: preset.titleColor || preset.textColor }} title={`Color 5 (Light Text): ${preset.titleColor || preset.textColor}`} />
                                                                 </div>
-                                                                {isSelected && <Check size={14} className="text-[#6EE7B7]" />}
+                                                                <div className="flex items-center gap-1">
+                                                                    {preset.isTopPick && (
+                                                                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/35">
+                                                                            Top Pick
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/80">
+                                                                        {preset.number}
+                                                                    </span>
+                                                                    {isSelected && <Check size={13} className="text-[#6EE7B7]" />}
+                                                                </div>
                                                             </div>
-                                                            <span className="text-xs font-bold text-white mt-1">{preset.name}</span>
-                                                            <span className="text-[10px] text-white/50 leading-tight">{preset.subtitle}</span>
+                                                            <div className="mt-0.5">
+                                                                <span className="text-xs font-bold text-white block truncate">{preset.title}</span>
+                                                                <span className="text-[11px] text-white/80 font-medium block truncate">{preset.name}</span>
+                                                                <span className="text-[10px] text-white/50 leading-tight block line-clamp-2 mt-0.5">{preset.subtitle}</span>
+                                                            </div>
                                                         </button>
                                                     );
                                                 })}

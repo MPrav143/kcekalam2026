@@ -7,6 +7,21 @@ const cookieParser = require('cookie-parser');
 const app = express();
 
 // Middleware
+// Live API Request/Response Logger for terminal visibility
+app.use((req, res, next) => {
+    const start = Date.now();
+    const time = new Date().toLocaleTimeString();
+    console.log(`\x1b[36m[API IN]\x1b[0m  \x1b[33m${req.method.padEnd(6)}\x1b[0m ${req.originalUrl || req.url} \x1b[90m(${time})\x1b[0m`);
+
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const status = res.statusCode;
+        const color = status >= 500 ? '\x1b[31m' : status >= 400 ? '\x1b[33m' : status >= 300 ? '\x1b[36m' : '\x1b[32m';
+        console.log(`\x1b[36m[API OUT]\x1b[0m ${color}${status}\x1b[0m \x1b[33m${req.method.padEnd(6)}\x1b[0m ${req.originalUrl || req.url} \x1b[90m(${duration}ms)\x1b[0m`);
+    });
+    next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = [
@@ -57,15 +72,18 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const passRoutes = require('./routes/passRoutes');
 const dynamicContentRoutes = require('./routes/dynamicContentRoutes');
+const sheetRoutes = require('./routes/sheetRoutes');
 const path = require('path');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/technical-events', (req, res) => require('./controllers/technicalImportController').getTechnicalEvents(req, res));
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/passes', passRoutes);
 app.use('/api/content', dynamicContentRoutes);
+app.use('/api/sheets', sheetRoutes);
 
 // Make uploads folder static
 app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));

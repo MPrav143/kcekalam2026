@@ -180,126 +180,126 @@ const EventCard = ({
                 )}
 
                 {/* Category Badge */}
-                <div className="absolute top-2.5 right-2.5 z-10">
+                <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10">
                     <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-heading font-semibold uppercase tracking-wider border backdrop-blur-md shadow-sm ${tokens.badgeBg}`}
+                        className={`inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-heading font-semibold uppercase tracking-wider border backdrop-blur-md shadow-sm ${tokens.badgeBg}`}
                     >
-                        <Zap size={10} className="shrink-0" />
-                        <span>{event.category || 'Science Event'}</span>
+                        <Zap size={9} className="sm:w-2.5 sm:h-2.5 shrink-0" />
+                        <span className="line-clamp-1">{event.category || 'Science Event'}</span>
                     </span>
                 </div>
 
                 {/* Event Type / Department Tag (if present) */}
                 {(event.eventType || event.department) && (
-                    <div className="absolute top-2.5 left-2.5 z-10">
-                        <span className="inline-block px-2 py-0.5 rounded-md text-[9px] font-mono uppercase tracking-wider bg-[#14050E]/80 text-[#D8D4F0]/90 border border-[#24BCE0]/25 backdrop-blur-md">
+                    <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10">
+                        <span className="inline-block px-1.5 sm:px-2 py-0.5 rounded-md text-[8px] sm:text-[9px] font-mono uppercase tracking-wider bg-[#14050E]/80 text-[#D8D4F0]/90 border border-[#24BCE0]/25 backdrop-blur-md line-clamp-1">
                             {event.eventType && event.eventType !== 'Normal'
                                 ? event.eventType
-                                : event.department?.slice(0, 18) || 'Festival'}
+                                : event.department?.slice(0, 14) || 'Festival'}
                         </span>
                     </div>
                 )}
 
                 {/* Prize Highlight (over bottom of image if available) */}
                 {prizeAmount && (
-                    <div className="absolute bottom-2 left-3 z-10 flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#14050E]/85 border border-[#F5A623]/40 text-[#F2D10A] text-[11px] font-semibold backdrop-blur-md">
-                        <Trophy size={11} className="text-[#F5A623] shrink-0" />
+                    <div className="absolute bottom-1.5 left-2 sm:bottom-2 sm:left-3 z-10 flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-lg bg-[#14050E]/85 border border-[#F5A623]/40 text-[#F2D10A] text-[9px] sm:text-[11px] font-semibold backdrop-blur-md">
+                        <Trophy size={10} className="sm:w-[11px] sm:h-[11px] text-[#F5A623] shrink-0" />
                         <span className="line-clamp-1">{prizeAmount}</span>
                     </div>
                 )}
             </div>
 
             {/* Card Content Body */}
-            <div className="relative p-4 sm:p-4.5 flex flex-col flex-1 z-10">
+            <div className="relative p-2.5 sm:p-4 md:p-4.5 flex flex-col flex-1 z-10">
                 {/* B. Event Title */}
-                <div className="mb-1.5">
+                <div className="mb-1">
                     <h3
-                        className="text-base sm:text-lg font-bold font-heading text-white tracking-tight leading-snug line-clamp-1 group-hover:text-white transition-colors"
+                        className="text-xs sm:text-base md:text-lg font-bold font-heading text-white tracking-tight leading-snug line-clamp-1 group-hover:text-[#24BCE0] transition-colors"
                         title={event.title}
                     >
                         {event.title}
                     </h3>
 
                     {/* Futuristic Accent Line beneath title */}
-                    <div className="mt-1.5 h-[2px] w-10 bg-gradient-to-r rounded-full transition-all duration-300 group-hover:w-16"
+                    <div className="mt-1 sm:mt-1.5 h-[2px] w-8 sm:w-10 bg-gradient-to-r rounded-full transition-all duration-300 group-hover:w-16"
                         style={{
                             background: `linear-gradient(90deg, ${tokens.accent} 0%, transparent 100%)`,
                         }}
                     />
                 </div>
 
-                {/* C. Event Description (2-3 lines truncated) */}
-                <p className="text-xs font-body text-[#D8D4F0]/80 leading-relaxed line-clamp-2 mb-2.5">
+                {/* C. Event Description (2 lines truncated) */}
+                <p className="text-[10px] sm:text-xs font-body text-[#D8D4F0]/80 leading-relaxed line-clamp-2 mb-2 sm:mb-2.5">
                     {event.description ||
                         'Engage in premier competitive scientific tracks, hands-on demonstrations, and academic challenges.'}
                 </p>
 
                 {/* Metadata Chips: Date, Time, Venue */}
-                <div className="space-y-1.5 mb-3.5 text-[11px] text-[#D8D4F0]/70 font-body">
-                    <div className="flex items-center gap-1.5">
-                        <Calendar size={13} className="shrink-0" style={{ color: tokens.accentLight }} />
+                <div className="space-y-1 sm:space-y-1.5 mb-2.5 sm:mb-3.5 text-[9px] sm:text-[11px] text-[#D8D4F0]/70 font-body">
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                        <Calendar size={11} className="sm:w-[13px] sm:h-[13px] shrink-0" style={{ color: tokens.accentLight }} />
                         <span className="line-clamp-1">{formattedDate}</span>
                     </div>
 
                     {formattedTime && (
-                        <div className="flex items-center gap-1.5">
-                            <Clock size={13} className="shrink-0" style={{ color: tokens.accentLight }} />
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                            <Clock size={11} className="sm:w-[13px] sm:h-[13px] shrink-0" style={{ color: tokens.accentLight }} />
                             <span className="line-clamp-1">{formattedTime}</span>
                         </div>
                     )}
 
                     {event.venue && (
-                        <div className="flex items-center gap-1.5">
-                            <MapPin size={13} className="shrink-0" style={{ color: tokens.accentLight }} />
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                            <MapPin size={11} className="sm:w-[13px] sm:h-[13px] shrink-0" style={{ color: tokens.accentLight }} />
                             <span className="line-clamp-1">{event.venue}</span>
                         </div>
                     )}
                 </div>
 
                 {/* D. Action Buttons */}
-                <div className="mt-auto pt-2.5 border-t border-[#D62C76]/20">
+                <div className="mt-auto pt-2 sm:pt-2.5 border-t border-[#D62C76]/20">
                     {onEdit && onDelete ? (
                         /* Admin Controls */
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5 sm:gap-2">
                             <button
                                 type="button"
                                 onClick={() => onEdit(event)}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#24BCE0]/15 hover:bg-[#24BCE0]/25 text-[#24BCE0] text-xs font-semibold transition-colors border border-[#24BCE0]/30 cursor-pointer"
+                                className="flex-1 flex items-center justify-center gap-1 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded-lg sm:rounded-xl bg-[#24BCE0]/15 hover:bg-[#24BCE0]/25 text-[#24BCE0] text-[10px] sm:text-xs font-semibold transition-colors border border-[#24BCE0]/30 cursor-pointer"
                             >
-                                <Edit size={13} /> Edit
+                                <Edit size={11} className="sm:w-[13px] sm:h-[13px]" /> Edit
                             </button>
                             <button
                                 type="button"
                                 onClick={() => onDelete(event._id)}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#F04438]/20 hover:bg-[#F04438]/30 text-[#F04438] text-xs font-semibold transition-colors border border-[#F04438]/30 cursor-pointer"
+                                className="flex-1 flex items-center justify-center gap-1 py-1.5 sm:py-2 px-1.5 sm:px-2.5 rounded-lg sm:rounded-xl bg-[#F04438]/20 hover:bg-[#F04438]/30 text-[#F04438] text-[10px] sm:text-xs font-semibold transition-colors border border-[#F04438]/30 cursor-pointer"
                             >
-                                <Trash2 size={13} /> Delete
+                                <Trash2 size={11} className="sm:w-[13px] sm:h-[13px]" /> Delete
                             </button>
                         </div>
                     ) : (
                         /* Public Dual Action Buttons: Explore & Register */
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-1 sm:gap-2">
                             {/* Secondary Action: Explore */}
                             <button
                                 type="button"
                                 onClick={handleExplore}
-                                className="relative py-2 px-2.5 rounded-xl font-heading font-medium text-xs text-[#D8D4F0] hover:text-white bg-[#24BCE0]/10 hover:bg-[#24BCE0]/20 border border-[#24BCE0]/25 hover:border-[#24BCE0]/50 backdrop-blur-md transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
+                                className="relative py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg sm:rounded-xl font-heading font-medium text-[10px] sm:text-xs text-[#D8D4F0] hover:text-white bg-[#24BCE0]/10 hover:bg-[#24BCE0]/20 border border-[#24BCE0]/25 hover:border-[#24BCE0]/50 backdrop-blur-md transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer active:scale-[0.98]"
                             >
-                                <Eye size={13} className="opacity-75 text-[#24BCE0]" />
-                                <span>Explore</span>
+                                <Eye size={11} className="opacity-75 text-[#24BCE0] shrink-0" />
+                                <span className="truncate">Explore</span>
                             </button>
 
-                            {/* Primary Action: Register (Sci-Fi Angular Accent) */}
+                            {/* Primary Action: Register */}
                             <button
                                 type="button"
                                 onClick={handleRegister}
-                                className={`relative py-2 px-2.5 rounded-xl font-heading font-semibold text-xs text-white bg-gradient-to-r ${tokens.primaryBtn} border border-white/20 shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer overflow-hidden group/btn`}
+                                className={`relative py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg sm:rounded-xl font-heading font-semibold text-[10px] sm:text-xs text-white bg-gradient-to-r ${tokens.primaryBtn} border border-white/20 shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1 cursor-pointer overflow-hidden group/btn`}
                             >
                                 {/* Shimmer Sweep on Hover */}
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
-                                <Sparkles size={12} className="shrink-0 text-white/80" />
-                                <span>Register</span>
-                                <ArrowRight size={12} className="shrink-0 group-hover/btn:translate-x-0.5 transition-transform" />
+                                <Sparkles size={10} className="shrink-0 text-white/80" />
+                                <span className="truncate">Register</span>
+                                <ArrowRight size={10} className="hidden sm:inline shrink-0 group-hover/btn:translate-x-0.5 transition-transform" />
                             </button>
                         </div>
                     )}

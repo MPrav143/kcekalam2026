@@ -1,30 +1,34 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Search, Filter, X, Save, Edit, Trash2, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { Plus, Search, Filter, X, Save, Edit, Trash2, Link as LinkIcon, ExternalLink, FileSpreadsheet, Download } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Loader from '../components/Loader';
 import EventDetailsModal from '../components/EventDetailsModal';
+import CulturalImportModal from '../components/CulturalImportModal';
+import TechnicalImportModal from '../components/TechnicalImportModal';
 
 import { useParams, Link } from 'react-router-dom';
 import { getImageUrl } from '../utils/imageUtils';
 import { DEPARTMENTS as DEFAULT_DEPTS, CULTURAL_SUBCATEGORIES as DEFAULT_SUBS } from '../utils/constants';
 import { useGlobalConfig } from '../context/GlobalConfigContext';
 import { API_URL } from '../utils/config';
-import { useHasPageBackground } from '../components/PageBackground';
 
 const ManageEvents = () => {
-    const hasBgImage = useHasPageBackground();
     const { departments, culturalSubcategories } = useGlobalConfig();
     const { category, subcategory } = useParams();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [showCulturalImport, setShowCulturalImport] = useState(false);
+    const [showTechnicalImport, setShowTechnicalImport] = useState(false);
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
     const [currentEvent, setCurrentEvent] = useState(null);
     const [selectedDetailsEvent, setSelectedDetailsEvent] = useState(null);
 
     // Form State
     const [formData, setFormData] = useState({
+        eventId: '',
         title: '',
         eventDescription: '',
         date: '',
@@ -43,6 +47,7 @@ const ManageEvents = () => {
         artistName: '', // Added artistName
         theme: [''], // Changed to array for multiple topics
         generalPrize: [''], // Added general prize array
+        otherPrizes: [''], // Added other prizes
         facultyCoordinators: [],
         studentCoordinators: [],
         resourcePerson: '',
@@ -63,7 +68,7 @@ const ManageEvents = () => {
 
     const fetchEvents = async () => {
         try {
-            const { data } = await axios.get(`${API_URL}/events`);
+            const { data } = await axios.get(`${API_URL}/events?t=${Date.now()}`);
             setEvents(data);
             setLoading(false);
         } catch (error) {
@@ -74,7 +79,22 @@ const ManageEvents = () => {
 
     // Filter events based on URL params and search
     const filteredEvents = events.filter(e => {
-        // Category Filter
+        // Quick Category Filter
+        if (selectedCategoryFilter !== 'All') {
+            if (selectedCategoryFilter === 'Technical') {
+                if (e.category === 'Cultural') return false;
+            } else if (selectedCategoryFilter === 'Cultural') {
+                if (e.category !== 'Cultural') return false;
+            } else if (selectedCategoryFilter === 'OnStage') {
+                const sub = (e.subCategory || e.department || e.eventType || '').toLowerCase();
+                if (e.category !== 'Cultural' || !sub.includes('on')) return false;
+            } else if (selectedCategoryFilter === 'OffStage') {
+                const sub = (e.subCategory || e.department || e.eventType || '').toLowerCase();
+                if (e.category !== 'Cultural' || !sub.includes('off')) return false;
+            }
+        }
+
+        // Category Filter from URL
         if (category) {
             if (category === 'Technical') {
                 // For Technical view, include explicitly 'Technical' events AND specialized types
@@ -98,6 +118,7 @@ const ManageEvents = () => {
         const s = searchTerm.toLowerCase();
         return (
             e.title.toLowerCase().includes(s) ||
+            (e.eventId && e.eventId.toLowerCase().includes(s)) ||
             (e.venue && e.venue.toLowerCase().includes(s)) ||
             (e.department && e.department.toLowerCase().includes(s))
         );
@@ -201,12 +222,15 @@ const ManageEvents = () => {
             // Clean up the payload before sending
             const cleanPayload = {
                 ...formData,
+                eventId: formData.eventId?.trim() || undefined,
                 description: formData.eventDescription || formData.description,
+                subCategory: formData.category === 'Cultural' ? formData.department : (formData.subCategory || formData.department),
                 timings: `${formData.fromTime} - ${formData.toTime}`,
                 rounds: formData.rounds.filter(r => isNotEmpty(r.name)),
                 rules: formData.rules.filter(r => isNotEmpty(r)),
                 theme: formData.theme.filter(t => isNotEmpty(t)),
                 generalPrize: formData.generalPrize.filter(p => isNotEmpty(p)),
+                otherPrizes: (formData.otherPrizes || formData.generalPrize || []).filter(p => isNotEmpty(p)),
                 facultyCoordinators: formData.facultyCoordinators.filter(c => isNotEmpty(c.name)),
                 studentCoordinators: formData.studentCoordinators.filter(c => isNotEmpty(c.name))
             };
@@ -261,10 +285,20 @@ const ManageEvents = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this event?')) {
             try {
+                // 1. Optimistic removal from UI immediately
+                setEvents(prev => prev.filter(e => e._id !== id && e.eventId !== id));
+
+                // 2. Clear client-side sessionStorage caches
+                if (typeof window !== 'undefined' && window.sessionStorage) {
+                    sessionStorage.removeItem('kalam_events_cache');
+                    sessionStorage.removeItem('kalam_bootstrap_cache');
+                }
+
                 await axios.delete(`${API_URL}/events/${id}`, getAuthConfig());
                 fetchEvents();
             } catch (error) {
-                console.error(error);
+                console.error('Delete error:', error);
+                fetchEvents();
                 if (error.response?.status === 401) {
                     window.location.href = '/login';
                 }
@@ -299,6 +333,7 @@ const ManageEvents = () => {
         }
 
         setFormData({
+            eventId: event.eventId || '',
             title: event.title || '',
             eventDescription: event.eventDescription || event.description || '',
             date: dateVal,
@@ -348,6 +383,7 @@ const ManageEvents = () => {
     const resetForm = () => {
         setCurrentEvent(null);
         setFormData({
+            eventId: '',
             title: '',
             eventDescription: '',
             date: '',
@@ -384,10 +420,10 @@ const ManageEvents = () => {
     };
 
     return (
-        <div className={`flex min-h-screen ${hasBgImage ? 'bg-transparent' : 'bg-[#14050E] bg-cosmic-grid'} text-white font-inter flex-col md:flex-row`}>
+        <div className="flex min-h-screen bg-[#14050E] text-white font-inter flex-col md:flex-row">
             <Sidebar />
             <div className="flex-1 flex flex-col lg:ml-64">
-                <main className="flex-1 p-4 lg:p-8 pt-20 lg:pt-8">
+                <main className="flex-1 p-4 lg:p-8 pt-20 lg:pt-8 relative z-10">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                         <div>
@@ -400,9 +436,92 @@ const ManageEvents = () => {
                                 {subcategory && <span className="px-2 py-0.5 bg-[#D62C76]/20 text-[#D62C76] rounded border border-[#D62C76]/40">{subcategory}</span>}
                             </div>
                         </div>
-                        <button onClick={openModal} className="bg-gradient-to-r from-[#D62C76] to-[#F47721] hover:from-[#c22066] hover:to-[#df6615] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium shadow-lg shadow-[#D62C76]/20 transition-all cursor-pointer">
-                            <Plus size={20} /> Add {subcategory && subcategory !== 'All' ? subcategory : category || ''} Event
-                        </button>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            {/* Technical Excel Actions */}
+                            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#0c182a] border border-[#24BCE0]/30">
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-[#24BCE0] px-2 hidden sm:inline">
+                                    Technical:
+                                </span>
+                                <a
+                                    href={`${API_URL}/events/technical/export`}
+                                    download="KALAM_2026_Technical_Events.xlsx"
+                                    className="bg-[#24BCE0]/15 hover:bg-[#24BCE0]/25 text-[#24BCE0] border border-[#24BCE0]/40 px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-semibold text-xs transition-all cursor-pointer shadow-sm active:scale-95"
+                                    title="Download all Technical Events as Excel spreadsheet"
+                                >
+                                    <Download size={14} />
+                                    <span>Download</span>
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTechnicalImport(true)}
+                                    className="bg-[#24BCE0] hover:bg-[#1fa9ca] text-[#0A051B] px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-bold text-xs transition-all cursor-pointer shadow-md shadow-[#24BCE0]/20 active:scale-95"
+                                    title="Import Technical Events from Excel file"
+                                >
+                                    <FileSpreadsheet size={14} />
+                                    <span>Import</span>
+                                </button>
+                            </div>
+
+                            {/* Cultural Excel Actions */}
+                            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#1d0d2b] border border-[#C084FC]/30">
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-[#C084FC] px-2 hidden sm:inline">
+                                    Cultural:
+                                </span>
+                                <a
+                                    href={`${API_URL}/events/cultural/export`}
+                                    download="KALAM_2026_Cultural_Events.xlsx"
+                                    className="bg-[#C084FC]/15 hover:bg-[#C084FC]/25 text-[#C084FC] border border-[#C084FC]/40 px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-semibold text-xs transition-all cursor-pointer shadow-sm active:scale-95"
+                                    title="Download all Cultural Events as Excel spreadsheet"
+                                >
+                                    <Download size={14} />
+                                    <span>Download</span>
+                                </a>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCulturalImport(true)}
+                                    className="bg-[#A855F7] hover:bg-[#9333EA] text-white px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-bold text-xs transition-all cursor-pointer shadow-md shadow-[#A855F7]/20 active:scale-95"
+                                    title="Import Cultural Events from Excel file"
+                                >
+                                    <FileSpreadsheet size={14} />
+                                    <span>Import</span>
+                                </button>
+                            </div>
+
+                            {/* Add Individual Event */}
+                            <button
+                                onClick={openModal}
+                                className="bg-gradient-to-r from-[#D62C76] to-[#F47721] hover:from-[#c22066] hover:to-[#df6615] text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium shadow-lg shadow-[#D62C76]/20 transition-all cursor-pointer text-xs active:scale-95"
+                            >
+                                <Plus size={16} /> Add {subcategory && subcategory !== 'All' ? subcategory : category || ''} Event
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Quick Category Filter Bar */}
+                    <div className="flex items-center gap-2 flex-wrap mb-6 p-2 rounded-2xl bg-white/[0.02] border border-white/10">
+                        <span className="text-xs text-white/50 px-2 flex items-center gap-1 font-semibold">
+                            <Filter size={13} /> Quick Filter:
+                        </span>
+                        {[
+                            { id: 'All', label: 'All Events' },
+                            { id: 'Technical', label: 'Technical' },
+                            { id: 'Cultural', label: 'Cultural (All)' },
+                            { id: 'OnStage', label: 'On Stage' },
+                            { id: 'OffStage', label: 'Off Stage' }
+                        ].map((f) => (
+                            <button
+                                key={f.id}
+                                type="button"
+                                onClick={() => setSelectedCategoryFilter(f.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                                    selectedCategoryFilter === f.id
+                                        ? 'bg-gradient-to-r from-[#D62C76] to-[#F47721] text-white shadow-md'
+                                        : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10'
+                                }`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
                     </div>
 
                     {/* Search */}
@@ -410,7 +529,7 @@ const ManageEvents = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                         <input
                             type="text"
-                            placeholder="Search by name, venue or dept..."
+                            placeholder="Search by name, venue or category..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-blue-500 transition-colors"
@@ -425,33 +544,37 @@ const ManageEvents = () => {
                             No events found in {subcategory || category}.
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
                             {filteredEvents.map(event => (
-                                <div key={event._id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:transform hover:scale-[1.02] transition-all duration-300 group">
-                                    <div className="h-48 overflow-hidden relative">
+                                <div key={event._id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden hover:transform hover:scale-[1.02] transition-all duration-300 group flex flex-col justify-between">
+                                    <div className="h-28 sm:h-48 overflow-hidden relative">
                                         <img
                                             src={getImageUrl(event.image) || 'https://via.placeholder.com/400x200?text=No+Image'}
                                             alt={event.title}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x200?text=No+Image'; }}
                                         />
-                                        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-white border border-white/20">
+                                        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/60 backdrop-blur-md px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-semibold text-white border border-white/20 truncate max-w-[120px]">
                                             {event.department || event.category}
                                         </div>
                                     </div>
-                                    <div className="p-6">
-                                        <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{event.title}</h3>
-                                        <p className="text-gray-400 text-sm mb-4 line-clamp-2">{event.eventDescription || event.description}</p>
-                                        <div className="flex gap-3 mt-auto lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-wrap">
-                                            <button onClick={() => setSelectedDetailsEvent(event)} className="w-full flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 py-2 rounded-lg transition-colors border border-blue-500/20 text-sm font-medium mb-1">
-                                                <ExternalLink size={16} /> View Participants
+                                    <div className="p-2.5 sm:p-6 flex flex-col flex-1 justify-between">
+                                        <div>
+                                            <h3 className="text-xs sm:text-xl font-bold text-white mb-1 sm:mb-2 line-clamp-1">{event.title}</h3>
+                                            <p className="text-gray-400 text-[10px] sm:text-sm mb-2 sm:mb-4 line-clamp-2">{event.eventDescription || event.description}</p>
+                                        </div>
+                                        <div className="flex flex-col gap-1 sm:gap-2 mt-auto">
+                                            <button onClick={() => setSelectedDetailsEvent(event)} className="w-full flex items-center justify-center gap-1 sm:gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 py-1 sm:py-2 px-1 rounded-lg transition-colors border border-blue-500/20 text-[10px] sm:text-sm font-medium">
+                                                <ExternalLink size={12} className="sm:w-4 sm:h-4 shrink-0" /> <span className="truncate">Participants</span>
                                             </button>
-                                            <button onClick={() => handleEdit(event)} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg transition-colors border border-white/10 text-sm font-medium">
-                                                <Edit size={16} /> Edit
-                                            </button>
-                                            <button onClick={() => handleDelete(event._id)} className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg transition-colors border border-red-500/20 text-sm font-medium">
-                                                <Trash2 size={16} /> Delete
-                                            </button>
+                                            <div className="flex gap-1 sm:gap-2">
+                                                <button onClick={() => handleEdit(event)} className="flex-1 flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-white py-1 sm:py-2 rounded-lg transition-colors border border-white/10 text-[10px] sm:text-sm font-medium">
+                                                    <Edit size={12} className="sm:w-4 sm:h-4 shrink-0" /> Edit
+                                                </button>
+                                                <button onClick={() => handleDelete(event._id)} className="flex-1 flex items-center justify-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-1 sm:py-2 rounded-lg transition-colors border border-red-500/20 text-[10px] sm:text-sm font-medium">
+                                                    <Trash2 size={12} className="sm:w-4 sm:h-4 shrink-0" /> Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -476,6 +599,16 @@ const ManageEvents = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Basic Info */}
                                 <div className="space-y-4">
+                                    <div>
+                                        <label className="text-[11px] font-semibold text-white/60 mb-1 block">Event ID (Unique Stable Identifier)</label>
+                                        <input
+                                            name="eventId"
+                                            value={formData.eventId || ''}
+                                            onChange={handleChange}
+                                            placeholder="e.g. CULT-ON-001 (or leave blank to auto-generate)"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:border-blue-500 outline-none transition-colors font-mono text-sm"
+                                        />
+                                    </div>
                                     <input name="title" value={formData.title} onChange={handleChange} placeholder="Event Title" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:border-blue-500 outline-none transition-colors" required />
                                     <select name="category" value={formData.category} onChange={handleChange} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:border-blue-500 outline-none transition-colors [&>option]:bg-[#1a1a1a] [&>option]:text-white ">
                                         <option value="Technical">Technical</option>
@@ -506,7 +639,7 @@ const ManageEvents = () => {
                                             onChange={handleChange}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:border-blue-500 outline-none transition-colors [&>option]:bg-[#1a1a1a] [&>option]:text-white"
                                         >
-                                            <option value="">Select Department</option>
+                                            <option value="">Select Technical Category</option>
                                             {(departments && departments.length > 0 ? departments : DEFAULT_DEPTS).map(dept => (
                                                 <option key={dept.code} value={dept.code}>
                                                     {dept.code} - {dept.name}
@@ -732,6 +865,8 @@ const ManageEvents = () => {
             )}
 
             <EventDetailsModal event={selectedDetailsEvent} onClose={() => setSelectedDetailsEvent(null)} isAdminView={true} />
+            <CulturalImportModal isOpen={showCulturalImport} onClose={() => setShowCulturalImport(false)} onImportSuccess={fetchEvents} />
+            <TechnicalImportModal isOpen={showTechnicalImport} onClose={() => setShowTechnicalImport(false)} onImportSuccess={fetchEvents} />
         </div>
     );
 };

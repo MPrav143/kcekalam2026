@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Loader from '../components/Loader';
-import { Users, Calendar, DollarSign, Ticket, FileText } from 'lucide-react';
+import { Users, Calendar, DollarSign, Ticket, FileText, FileSpreadsheet } from 'lucide-react';
 import {
     ResponsiveContainer,
     BarChart,
@@ -13,7 +13,6 @@ import {
     Tooltip
 } from 'recharts';
 import { API_URL } from '../utils/config';
-import { useHasPageBackground } from '../components/PageBackground';
 
 const DashboardCard = ({ title, value, icon: Icon, color }) => (
     <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex items-center justify-between hover:bg-white/10 transition-all group">
@@ -28,7 +27,6 @@ const DashboardCard = ({ title, value, icon: Icon, color }) => (
 );
 
 const AdminDashboard = () => {
-    const hasBgImage = useHasPageBackground();
     const [stats, setStats] = useState({
         totalEvents: 0,
         totalRegistrations: 0,
@@ -39,7 +37,6 @@ const AdminDashboard = () => {
         allRegistrations: []
     });
     const [loading, setLoading] = useState(true);
-
     const [user, setUser] = useState(null);
 
     useEffect(() => {
@@ -95,7 +92,7 @@ const AdminDashboard = () => {
     );
 
     if (loading) return (
-        <div className={`flex min-h-screen ${hasBgImage ? 'bg-transparent' : 'bg-[#14050E]'} text-white`}>
+        <div className="flex min-h-screen bg-[#14050E] text-white">
             <Sidebar />
             <div className="flex-1 flex items-center justify-center">
                 <Loader text="Loading Dashboard..." />
@@ -104,10 +101,10 @@ const AdminDashboard = () => {
     );
 
     return (
-        <div className={`flex min-h-screen ${hasBgImage ? 'bg-transparent' : 'bg-[#14050E]/80 bg-cosmic-grid'} text-white font-inter flex-col md:flex-row`}>
+        <div className="flex min-h-screen bg-[#14050E] text-white font-inter flex-col md:flex-row">
             <Sidebar />
             <div className="flex-1 flex flex-col lg:ml-64">
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
+                <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8 relative z-10">
 
                     <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                         <div>
@@ -163,8 +160,11 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Site Config Shortcut */}
+                    {/* Management Shortcuts */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div onClick={() => window.location.href = '/admin/sheets'} className="cursor-pointer">
+                            <DashboardCard title="Database Integration" value="Google Sheets Sync" icon={FileSpreadsheet} color="green" />
+                        </div>
                         <div onClick={() => window.location.href = '/admin/content'} className="cursor-pointer">
                             <DashboardCard title="Site Config" value="Content" icon={FileText} color="cyan" />
                         </div>

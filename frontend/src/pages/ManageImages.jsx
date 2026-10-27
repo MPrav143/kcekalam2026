@@ -19,14 +19,16 @@ import {
     Layers,
     Play,
     LayoutGrid,
-    Search
+    Search,
+    Smartphone,
+    Monitor
 } from 'lucide-react';
 import { getImageUrl } from '../utils/imageUtils';
 import { API_URL } from '../utils/config';
 import Sidebar from '../components/Sidebar';
 import Loader from '../components/Loader';
 import { useGlobalConfig } from '../context/GlobalConfigContext';
-import { isVideoUrl, useHasPageBackground } from '../components/PageBackground';
+import { isVideoUrl } from '../components/PageBackground';
 import { DEPARTMENTS, CULTURAL_SUBCATEGORIES } from '../utils/constants';
 
 // All configurable sections categorized
@@ -38,7 +40,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Universal fallback background image applied across all pages unless overridden.',
         placeholder: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'about_bg',
@@ -47,7 +52,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Background for About KCE, Institution legacy, and Festival vision.',
         placeholder: 'https://ik.imagekit.io/kalam/About%20Page/Cosmic%20Ocean%20of%20Future%20Waves.png',
         samplePreset: 'https://ik.imagekit.io/kalam/About%20Page/Cosmic%20Ocean%20of%20Future%20Waves.png',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://ik.imagekit.io/kalam/About%20Page/Cosmic%20Ocean%20of%20Future%20Waves.png',
+        mobileSamplePreset: 'https://ik.imagekit.io/kalam/About%20Page/Cosmic%20Ocean%20of%20Future%20Waves.png',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'passes_bg',
@@ -56,16 +64,22 @@ const PAGE_BACKGROUNDS = [
         description: 'Background for Admission tiers, Privilege passes, and ticketing grid.',
         placeholder: 'https://ik.imagekit.io/kalam/Hero/Neon%20Crystal%20Sci-Fi%20Void.png',
         samplePreset: 'https://ik.imagekit.io/kalam/Hero/Neon%20Crystal%20Sci-Fi%20Void.png',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://ik.imagekit.io/kalam/Hero/Neon%20Crystal%20Sci-Fi%20Void.png',
+        mobileSamplePreset: 'https://ik.imagekit.io/kalam/Hero/Neon%20Crystal%20Sci-Fi%20Void.png',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'events_bg',
         label: 'Technical Events Track Background',
         targetPath: '/#technical-events',
-        description: 'Background for Technical Events track, Hackathons, Workshops, and Department Categories.',
+        description: 'Background for Technical Events track, Hackathons, Workshops, and Category Cards.',
         placeholder: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'cultural_events_bg',
@@ -74,7 +88,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Atmospheric stage and festival lighting background for Cultural Events track & showcase.',
         placeholder: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'highlights_bg',
@@ -83,7 +100,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Background for KCE KALAM Legacy, Key Highlights, and past festival moments.',
         placeholder: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'event_detail_bg',
@@ -92,7 +112,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Background for Individual event descriptions, guidelines, rules, and rounds.',
         placeholder: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'register_bg',
@@ -101,7 +124,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Background for Student registration, pass checkout, and payment processing.',
         placeholder: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'home_bg',
@@ -110,7 +136,10 @@ const PAGE_BACKGROUNDS = [
         description: 'Optional full-page backdrop (disabled by default so sections have independent backgrounds).',
         placeholder: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+        mobileSamplePreset: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     }
 ];
 
@@ -128,19 +157,23 @@ const BRANDING_SECTIONS = [
         key: 'home_hero_bg',
         label: 'Home Hero Banner Background (Optional)',
         targetPath: '/',
-        description: 'Optional hero card container backdrop (kept disabled if clean solid surface is selected).',
+        description: 'Hero banner backdrop for the home greeting portal (Desktop & Mobile supported).',
         placeholder: 'https://ik.imagekit.io/kalam/Hero/Celestial%20Blue%20Arena%20Portal.png',
         samplePreset: 'https://ik.imagekit.io/kalam/Hero/Celestial%20Blue%20Arena%20Portal.png',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://ik.imagekit.io/kalam/Hero/Celestial%20Blue%20Arena%20Portal.png',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'footer_bg',
         label: 'Footer Atmospheric Background',
         targetPath: '/',
-        description: 'Deep cosmic starfield backdrop for the sponsors and footer section.',
+        description: 'Deep cosmic starfield backdrop for the sponsors and footer section (Desktop & Mobile).',
         placeholder: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80',
         samplePreset: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80',
-        typeHint: 'image'
+        mobilePlaceholder: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=800&q=80',
+        typeHint: 'image',
+        hasMobile: true
     },
     {
         key: 'footer_bg_video',
@@ -149,46 +182,59 @@ const BRANDING_SECTIONS = [
         description: 'Optional atmospheric video loop playing in the footer of the website (mp4/webm).',
         placeholder: 'https://example.com/video.mp4',
         samplePreset: '',
-        typeHint: 'video'
+        typeHint: 'video',
+        hasMobile: true
     }
 ];
 
 const CURATED_PRESETS = [
     {
-        title: 'Deep Cosmic Nebula',
+        title: 'Deep Cosmic Nebula (Desktop)',
         type: 'image',
         url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=80',
-        tag: 'Space / Nebula'
+        tag: 'Space / Nebula (16:9)'
     },
     {
-        title: 'Techno Digital Grid',
+        title: 'Deep Cosmic Nebula (Mobile)',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=800&q=80',
+        tag: 'Space / Nebula (9:16)'
+    },
+    {
+        title: 'Techno Digital Grid (Desktop)',
         type: 'image',
         url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80',
-        tag: 'Tech / Innovation'
+        tag: 'Tech / Innovation (16:9)'
     },
     {
-        title: 'Cultural Stage Glow',
+        title: 'Techno Digital Grid (Mobile)',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+        tag: 'Tech / Innovation (9:16)'
+    },
+    {
+        title: 'Cultural Stage Glow (Desktop)',
         type: 'image',
         url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1920&q=80',
-        tag: 'Cultural / Concert'
+        tag: 'Cultural / Concert (16:9)'
     },
     {
-        title: 'Earth Orbit Satellite',
+        title: 'Cultural Stage Glow (Mobile)',
         type: 'image',
-        url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80',
-        tag: 'Global Space'
+        url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80',
+        tag: 'Cultural / Concert (9:16)'
     },
     {
-        title: 'Cyber Security Grid',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80',
-        tag: 'Security / Register'
-    },
-    {
-        title: 'High-Tech Operations',
+        title: 'High-Tech Operations Admin (Desktop)',
         type: 'image',
         url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1920&q=80',
-        tag: 'Admin / Command'
+        tag: 'Admin / Command (16:9)'
+    },
+    {
+        title: 'High-Tech Operations Admin (Mobile)',
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80',
+        tag: 'Admin / Command (9:16)'
     }
 ];
 
@@ -222,7 +268,6 @@ const PRIMARY_TRACK_CARDS = [
 ];
 
 const ManageImages = () => {
-    const hasBgImage = useHasPageBackground();
     const { refreshConfig } = useGlobalConfig();
     const [configs, setConfigs] = useState({});
     const [loading, setLoading] = useState(true);
@@ -231,41 +276,37 @@ const ManageImages = () => {
     const [message, setMessage] = useState(null);
     const [inputs, setInputs] = useState({});
     const [activeTab, setActiveTab] = useState('cards'); // 'cards' | 'backgrounds' | 'branding' | 'presets'
+    const [globalDeviceFilter, setGlobalDeviceFilter] = useState('desktop'); // 'desktop' | 'mobile'
+    const [cardDeviceModes, setCardDeviceModes] = useState({}); // sectionKey -> 'desktop' | 'mobile'
     const [cardSubFilter, setCardSubFilter] = useState('all'); // 'all' | 'tracks' | 'technical' | 'cultural'
     const [cardSearchQuery, setCardSearchQuery] = useState('');
     const [departmentsList, setDepartmentsList] = useState([]);
     const [culturalSubsList, setCulturalSubsList] = useState([]);
     const [simulateModal, setSimulateModal] = useState(null); // section object to simulate
+    const [simDevice, setSimDevice] = useState('desktop'); // 'desktop' | 'mobile'
     const fileInputRefs = useRef({});
 
     // Dynamic Card Sections List (Tracks + Departments + Cultural Categories)
     const allCardSections = useMemo(() => {
         const list = [...PRIMARY_TRACK_CARDS];
 
-        // Technical departments: merge default DEPARTMENTS with custom departments
-        const mergedDepts = [...DEPARTMENTS];
-        if (Array.isArray(departmentsList)) {
-            departmentsList.forEach(dept => {
-                const idx = mergedDepts.findIndex(item => item.code?.toLowerCase() === dept.code?.toLowerCase());
-                if (idx >= 0) {
-                    mergedDepts[idx] = { ...mergedDepts[idx], ...dept };
-                } else {
-                    mergedDepts.push(dept);
-                }
-            });
-        }
-        mergedDepts.forEach(dept => {
+        // Technical categories: dynamic list from database or default
+        const activeTechCats = (Array.isArray(departmentsList) && departmentsList.length > 0)
+            ? departmentsList
+            : DEPARTMENTS;
+
+        activeTechCats.forEach(dept => {
             list.push({
                 key: `dept_${dept.code}_image`,
                 deptCode: dept.code,
-                label: `${dept.code} — Department Card`,
+                label: `${dept.name || dept.code} — Category Card`,
                 targetPath: `/?cat=Technical&dept=${encodeURIComponent(dept.code)}`,
                 description: `${dept.name} card poster displayed in Level 2 Technical Categories.`,
                 placeholder: dept.image || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
                 samplePreset: dept.image || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
                 typeHint: 'image',
                 categoryGroup: 'technical',
-                badgeText: 'Technical Department',
+                badgeText: 'Technical Category',
                 badgeColor: '#24BCE0',
                 docId: dept._id
             });
@@ -321,17 +362,9 @@ const ManageImages = () => {
             const data = uploadRes.data || {};
             setConfigs(data);
 
-            const mergedDepts = [...DEPARTMENTS];
-            if (Array.isArray(deptsRes.data)) {
-                deptsRes.data.forEach(d => {
-                    const idx = mergedDepts.findIndex(item => item.code?.toLowerCase() === d.code?.toLowerCase());
-                    if (idx >= 0) {
-                        mergedDepts[idx] = { ...mergedDepts[idx], ...d };
-                    } else {
-                        mergedDepts.push(d);
-                    }
-                });
-            }
+            const activeTechCats = (Array.isArray(deptsRes.data) && deptsRes.data.length > 0)
+                ? deptsRes.data
+                : DEPARTMENTS;
 
             const mergedSubs = [...CULTURAL_SUBCATEGORIES];
             if (Array.isArray(culturalRes.data)) {
@@ -345,16 +378,20 @@ const ManageImages = () => {
                 });
             }
 
-            setDepartmentsList(mergedDepts);
+            setDepartmentsList(activeTechCats);
             setCulturalSubsList(mergedSubs);
 
             const allSections = [...PAGE_BACKGROUNDS, ...BRANDING_SECTIONS, ...PRIMARY_TRACK_CARDS];
             const initialInputs = {};
             allSections.forEach(s => {
                 initialInputs[s.key] = data[s.key] || (s.aliasKey ? data[s.aliasKey] : '') || '';
+                if (s.hasMobile) {
+                    const mobKey = `${s.key}_mobile`;
+                    initialInputs[mobKey] = data[mobKey] || '';
+                }
             });
 
-            mergedDepts.forEach(d => {
+            activeTechCats.forEach(d => {
                 const k = `dept_${d.code}_image`;
                 initialInputs[k] = data[k] || d.image || '';
             });
@@ -446,31 +483,112 @@ const ManageImages = () => {
         }
     };
 
-    const handleClear = async (key) => {
-        handleInputChange(key, '');
+    const handleDeleteImage = async (key, label) => {
+        const isMobileKey = key.endsWith('_mobile');
+        const deviceType = isMobileKey ? 'mobile' : 'desktop';
+        const displayLabel = label || key.replace(/_/g, ' ');
+        const confirmed = window.confirm(
+            `Are you sure you want to delete the ${deviceType} image for "${displayLabel}"?\n\nThis will remove the current media and reset this section to its default design.`
+        );
+        if (!confirmed) return;
+
         setUpdating(prev => ({ ...prev, [key]: true }));
+        setMessage(null);
+
         try {
             await axios.post(
                 `${API_URL}/content/config`,
                 { key, value: '', type: 'image' },
                 getAuthConfig()
             );
-            if (key === 'technical_card_image') {
-                await axios.post(`${API_URL}/content/config`, { key: 'cat_technical_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {});
-            } else if (key === 'cultural_card_image') {
-                await axios.post(`${API_URL}/content/config`, { key: 'cat_cultural_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {});
+
+            // Cross-sync track alias keys if applicable
+            if (key === 'technical_card_image' || key === 'cat_technical_image') {
+                await Promise.all([
+                    axios.post(`${API_URL}/content/config`, { key: 'technical_card_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {}),
+                    axios.post(`${API_URL}/content/config`, { key: 'cat_technical_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {})
+                ]);
+            } else if (key === 'cultural_card_image' || key === 'cat_cultural_image') {
+                await Promise.all([
+                    axios.post(`${API_URL}/content/config`, { key: 'cultural_card_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {}),
+                    axios.post(`${API_URL}/content/config`, { key: 'cat_cultural_image', value: '', type: 'image' }, getAuthConfig()).catch(() => {})
+                ]);
             }
+
+            // Sync Department model if applicable
+            if (key.startsWith('dept_') && key.endsWith('_image')) {
+                const code = key.replace('dept_', '').replace('_image', '');
+                const depts = departmentsList.length > 0 ? departmentsList : DEPARTMENTS;
+                const foundDept = depts.find(d => d.code === code);
+                if (foundDept && foundDept._id) {
+                    await axios.put(`${API_URL}/content/departments/${foundDept._id}`, { ...foundDept, image: '' }, getAuthConfig()).catch(() => {});
+                }
+            }
+
+            // Sync Cultural Subcategory model if applicable
+            if (key.startsWith('cultural_') && key.endsWith('_image')) {
+                const code = key.replace('cultural_', '').replace('_image', '');
+                const subs = culturalSubsList.length > 0 ? culturalSubsList : CULTURAL_SUBCATEGORIES;
+                const foundSub = subs.find(s => s.code === code);
+                if (foundSub && foundSub._id) {
+                    await axios.put(`${API_URL}/content/cultural-subcategories/${foundSub._id}`, { ...foundSub, image: '' }, getAuthConfig()).catch(() => {});
+                }
+            }
+
+            setInputs(prev => ({ ...prev, [key]: '' }));
             setConfigs(prev => ({ ...prev, [key]: '' }));
             setUpdating(prev => ({ ...prev, [key]: false }));
+
             setMessage({
                 type: 'success',
-                text: `Cleared ${key.replace(/_/g, ' ')}. Now using default!`
+                text: `Deleted image for "${displayLabel}" (${deviceType}). Reset to default!`
             });
+
             if (refreshConfig) refreshConfig();
         } catch (error) {
-            console.error(error);
+            console.error('Delete failed:', error);
             setUpdating(prev => ({ ...prev, [key]: false }));
-            setMessage({ type: 'error', text: 'Failed to clear setting.' });
+            setMessage({
+                type: 'error',
+                text: error.response?.data?.message || 'Failed to delete image.'
+            });
+        }
+    };
+
+    const handleDeleteBothImages = async (section) => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete BOTH desktop and mobile images for "${section.label}"?\n\nThis will remove all custom media for this section and reset to default template.`
+        );
+        if (!confirmed) return;
+
+        const desktopKey = section.key;
+        const mobileKey = `${section.key}_mobile`;
+        setUpdating(prev => ({ ...prev, [desktopKey]: true, [mobileKey]: true }));
+        setMessage(null);
+
+        try {
+            await Promise.all([
+                axios.post(`${API_URL}/content/config`, { key: desktopKey, value: '', type: 'image' }, getAuthConfig()),
+                axios.post(`${API_URL}/content/config`, { key: mobileKey, value: '', type: 'image' }, getAuthConfig())
+            ]);
+
+            setInputs(prev => ({ ...prev, [desktopKey]: '', [mobileKey]: '' }));
+            setConfigs(prev => ({ ...prev, [desktopKey]: '', [mobileKey]: '' }));
+            setUpdating(prev => ({ ...prev, [desktopKey]: false, [mobileKey]: false }));
+
+            setMessage({
+                type: 'success',
+                text: `Deleted both desktop & mobile images for "${section.label}". Reset to default!`
+            });
+
+            if (refreshConfig) refreshConfig();
+        } catch (error) {
+            console.error('Delete both failed:', error);
+            setUpdating(prev => ({ ...prev, [desktopKey]: false, [mobileKey]: false }));
+            setMessage({
+                type: 'error',
+                text: 'Failed to delete images.'
+            });
         }
     };
 
@@ -574,11 +692,11 @@ const ManageImages = () => {
     const configuredCount = Object.keys(configs).filter(k => configs[k] && configs[k].trim()).length;
 
     return (
-        <div className={`flex min-h-screen ${hasBgImage ? 'bg-transparent' : 'bg-[#14050E]/80 bg-cosmic-grid'} text-white font-body flex-col md:flex-row`}>
+        <div className="flex min-h-screen bg-[#14050E] text-white font-body flex-col md:flex-row">
             <Sidebar />
 
             <div className="flex-1 flex flex-col lg:ml-64">
-                <main className="flex-1 p-4 lg:p-8 pt-20 lg:pt-8 max-w-7xl">
+                <main className="flex-1 p-4 lg:p-8 pt-20 lg:pt-8 max-w-7xl relative z-10">
                     {/* Header Banner */}
                     <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                         <div>
@@ -695,7 +813,7 @@ const ManageImages = () => {
                                 {[
                                     { id: 'all', label: `All Cards (${allCardSections.length})` },
                                     { id: 'tracks', label: `Main Tracks (${allCardSections.filter(s => s.categoryGroup === 'tracks').length})` },
-                                    { id: 'technical', label: `Technical Depts (${allCardSections.filter(s => s.categoryGroup === 'technical').length})` },
+                                    { id: 'technical', label: `Technical Categories (${allCardSections.filter(s => s.categoryGroup === 'technical').length})` },
                                     { id: 'cultural', label: `Cultural Categories (${allCardSections.filter(s => s.categoryGroup === 'cultural').length})` }
                                 ].map(f => (
                                     <button
@@ -748,7 +866,7 @@ const ManageImages = () => {
                                     Copy or preview these free-to-use high-resolution cosmic images and video loops to test your backgrounds immediately.
                                 </p>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
                                     {CURATED_PRESETS.map((preset, idx) => (
                                         <div
                                             key={idx}
@@ -810,6 +928,50 @@ const ManageImages = () => {
                         </div>
                     )}
 
+                    {/* Background Device Mode Switcher Toolbar */}
+                    {activeTab === 'backgrounds' && (
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 bg-[#180614]/80 p-3.5 rounded-2xl border border-white/10 animate-fadeInUp">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Device Mode:</span>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setGlobalDeviceFilter('desktop');
+                                        setCardDeviceModes({});
+                                    }}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                        globalDeviceFilter === 'desktop'
+                                            ? 'bg-[#24BCE0] text-black shadow-lg shadow-[#24BCE0]/20'
+                                            : 'bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                                >
+                                    <Monitor size={14} /> Desktop (Wide 16:9)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setGlobalDeviceFilter('mobile');
+                                        const allMob = {};
+                                        PAGE_BACKGROUNDS.forEach(s => { allMob[s.key] = 'mobile'; });
+                                        BRANDING_SECTIONS.forEach(s => { allMob[s.key] = 'mobile'; });
+                                        setCardDeviceModes(allMob);
+                                    }}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                        globalDeviceFilter === 'mobile'
+                                            ? 'bg-[#D62C76] text-white shadow-lg shadow-[#D62C76]/25'
+                                            : 'bg-white/5 text-gray-400 hover:text-white'
+                                    }`}
+                                >
+                                    <Smartphone size={14} /> Mobile (Portrait 9:16)
+                                </button>
+                            </div>
+                            <div className="text-xs text-[#D8D4F0]/80 flex items-center gap-2">
+                                <Sparkles size={13} className="text-[#F2D10A]" />
+                                <span>Screen sizes are detected automatically on visitor & admin pages</span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Main Sections Grid */}
                     {activeTab !== 'presets' && (
                         loading ? (
@@ -817,11 +979,25 @@ const ManageImages = () => {
                         ) : (
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                                 {activeSections.map(section => {
-                                    const currentVal = inputs[section.key] || '';
-                                    const savedVal = configs[section.key] || '';
-                                    const isVideo = isVideoUrl(currentVal || savedVal);
+                                    const hasMobileCapability = Boolean(section.hasMobile || activeTab === 'backgrounds');
+                                    const isMobileMode = hasMobileCapability && ((cardDeviceModes[section.key] || globalDeviceFilter) === 'mobile');
+                                    const currentKey = isMobileMode ? `${section.key}_mobile` : section.key;
+
+                                    const currentVal = inputs[currentKey] || '';
+                                    const savedVal = configs[currentKey] || '';
+                                    const desktopFallbackVal = isMobileMode ? (inputs[section.key] || configs[section.key] || '') : '';
+                                    const displayVal = currentVal || (isMobileMode ? desktopFallbackVal : '') || '';
+                                    const isVideo = isVideoUrl(displayVal || savedVal);
                                     const hasCustomMedia = Boolean(currentVal || savedVal);
+                                    const isInheritingFallback = isMobileMode && !hasCustomMedia && Boolean(desktopFallbackVal);
                                     const isDirty = currentVal !== savedVal;
+
+                                    const placeholderUrl = isMobileMode
+                                        ? (section.mobilePlaceholder || section.placeholder)
+                                        : section.placeholder;
+                                    const presetUrl = isMobileMode
+                                        ? (section.mobileSamplePreset || section.samplePreset)
+                                        : section.samplePreset;
 
                                     return (
                                         <div
@@ -850,12 +1026,17 @@ const ManageImages = () => {
                                                             )}
                                                             {hasCustomMedia && (
                                                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                                                    Active Custom
+                                                                    {isMobileMode ? 'Mobile Custom' : 'Desktop Custom'}
                                                                 </span>
                                                             )}
-                                                            {!hasCustomMedia && (
+                                                            {isInheritingFallback && (
+                                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                                                    Using Desktop Fallback
+                                                                </span>
+                                                            )}
+                                                            {!hasCustomMedia && !isInheritingFallback && (
                                                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider bg-white/5 text-gray-400 border border-white/10">
-                                                                    Default
+                                                                    Default Theme
                                                                 </span>
                                                             )}
                                                         </div>
@@ -864,17 +1045,35 @@ const ManageImages = () => {
                                                         </p>
                                                     </div>
 
-                                                    {/* Media Type Icon & Target Page */}
-                                                    <div className="flex items-center gap-1.5 shrink-0">
-                                                        {isVideo ? (
-                                                            <span className="p-2 rounded-lg bg-[#D62C76]/20 text-[#D62C76] border border-[#D62C76]/30" title="Video media detected">
-                                                                <VideoIcon size={18} />
-                                                            </span>
-                                                        ) : (
-                                                            <span className="p-2 rounded-lg bg-[#24BCE0]/20 text-[#24BCE0] border border-[#24BCE0]/30" title="Image media detected">
-                                                                <ImageIcon size={18} />
-                                                            </span>
+                                                    {/* Device Switcher & Icons */}
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        {hasMobileCapability && (
+                                                            <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/10">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setCardDeviceModes(prev => ({ ...prev, [section.key]: 'desktop' }))}
+                                                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                                                                        !isMobileMode ? 'bg-[#24BCE0] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                                                                    }`}
+                                                                    title="Configure Desktop (16:9) view"
+                                                                >
+                                                                    <Monitor size={12} /> Desktop
+                                                                    {configs[section.key] && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5" />}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setCardDeviceModes(prev => ({ ...prev, [section.key]: 'mobile' }))}
+                                                                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                                                                        isMobileMode ? 'bg-[#D62C76] text-white shadow-sm' : 'text-gray-400 hover:text-white'
+                                                                    }`}
+                                                                    title="Configure Mobile (9:16) view"
+                                                                >
+                                                                    <Smartphone size={12} /> Mobile
+                                                                    {configs[`${section.key}_mobile`] && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5" />}
+                                                                </button>
+                                                            </div>
                                                         )}
+
                                                         {section.targetPath && (
                                                             <a
                                                                 href={section.targetPath}
@@ -883,7 +1082,7 @@ const ManageImages = () => {
                                                                 className="p-2 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors border border-white/10"
                                                                 title={`Preview live on ${section.targetPath}`}
                                                             >
-                                                                <Compass size={18} />
+                                                                <Compass size={16} />
                                                             </a>
                                                         )}
                                                     </div>
@@ -893,110 +1092,194 @@ const ManageImages = () => {
                                                 <div className="mb-4">
                                                     <div className="flex items-center justify-between text-xs text-gray-400 mb-1.5">
                                                         <span className="font-semibold uppercase tracking-wider text-[11px] text-[#24BCE0] flex items-center gap-1.5">
-                                                            <Eye size={13} /> Live Preview
+                                                            <Eye size={13} /> Live Preview ({isMobileMode ? 'Mobile View' : 'Desktop View'})
                                                         </span>
                                                         <span className="text-[11px] text-gray-500">
-                                                            {isVideo ? 'Video Mode • 16:9' : 'Image Mode • Card Cover'}
+                                                            {isMobileMode ? 'Phone Portrait • 9:16' : isVideo ? 'Video Mode • 16:9' : 'Image Mode • 16:9'}
                                                         </span>
                                                     </div>
 
-                                                    <div className="relative bg-black/60 rounded-xl h-52 sm:h-56 flex items-center justify-center overflow-hidden border border-white/10 group shadow-inner">
-                                                        {currentVal ? (
-                                                            isVideo ? (
-                                                                <video
-                                                                    key={getImageUrl(currentVal)}
-                                                                    src={getImageUrl(currentVal)}
-                                                                    className="w-full h-full object-cover"
-                                                                    autoPlay
-                                                                    loop
-                                                                    muted
-                                                                    playsInline
-                                                                    controls
-                                                                />
-                                                            ) : (
-                                                                <img
-                                                                    key={getImageUrl(currentVal)}
-                                                                    src={getImageUrl(currentVal)}
-                                                                    alt={section.label}
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                                    onError={(e) => {
-                                                                        e.target.onerror = null;
-                                                                        e.target.src = 'https://via.placeholder.com/600x340?text=Invalid+Image+or+Video+URL';
-                                                                    }}
-                                                                />
-                                                            )
-                                                        ) : (
-                                                            section.placeholder ? (
-                                                                /* Default Preset Preview with Informative Overlay */
-                                                                <div className="w-full h-full relative group">
+                                                    {/* Device specific preview frame */}
+                                                    {isMobileMode ? (
+                                                        <div className="relative bg-black/80 rounded-[28px] h-64 sm:h-72 w-40 sm:w-48 mx-auto flex items-center justify-center overflow-hidden border-2 border-white/20 group shadow-2xl">
+                                                            {/* Phone dynamic notch */}
+                                                            <div className="absolute top-2 inset-x-0 mx-auto w-16 h-3 bg-black rounded-full border border-white/15 z-20 pointer-events-none" />
+                                                            {/* Phone home indicator bar */}
+                                                            <div className="absolute bottom-1.5 inset-x-0 mx-auto w-16 h-1 bg-white/40 rounded-full z-20 pointer-events-none" />
+
+                                                            {displayVal ? (
+                                                                isVideo ? (
+                                                                    <video
+                                                                        key={`${getImageUrl(displayVal)}-m`}
+                                                                        src={getImageUrl(displayVal)}
+                                                                        className="w-full h-full object-cover object-center"
+                                                                        autoPlay loop muted playsInline controls
+                                                                    />
+                                                                ) : (
                                                                     <img
-                                                                        src={getImageUrl(section.placeholder)}
+                                                                        key={`${getImageUrl(displayVal)}-m`}
+                                                                        src={getImageUrl(displayVal)}
                                                                         alt={section.label}
-                                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-85 transition-opacity"
+                                                                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                                                                         onError={(e) => {
                                                                             e.target.onerror = null;
-                                                                            e.target.src = 'https://via.placeholder.com/600x340?text=KALAM+2026+Default';
+                                                                            e.target.src = 'https://via.placeholder.com/390x844?text=Invalid+Mobile+Media';
                                                                         }}
                                                                     />
-                                                                    <div className="absolute inset-0 bg-[#14050E]/40" />
-                                                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                                                                        <span className="px-2.5 py-1 rounded-md bg-black/80 border border-white/20 text-[11px] font-semibold text-white/95 backdrop-blur-md">
-                                                                            Default Image Active
-                                                                        </span>
-                                                                        <span className="text-[10px] text-gray-300 mt-1 max-w-xs">
-                                                                            Upload a file or paste URL below to replace
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
+                                                                )
                                                             ) : (
-                                                                /* High-Tech Empty State Placeholder */
-                                                                <div className="flex flex-col items-center justify-center p-6 text-center text-gray-500 select-none">
-                                                                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-gray-400 group-hover:border-[#24BCE0]/40 transition-colors">
-                                                                        <ImageIcon size={22} />
+                                                                placeholderUrl ? (
+                                                                    <div className="w-full h-full relative group">
+                                                                        <img
+                                                                            src={getImageUrl(placeholderUrl)}
+                                                                            alt={section.label}
+                                                                            className="w-full h-full object-cover opacity-60 group-hover:opacity-85 transition-opacity"
+                                                                        />
+                                                                        <div className="absolute inset-0 bg-[#14050E]/40" />
+                                                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center">
+                                                                            <span className="px-2 py-0.5 rounded bg-black/80 border border-white/20 text-[10px] font-semibold text-white/95">
+                                                                                Default Mobile
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
-                                                                    <p className="text-xs font-semibold text-gray-300">
-                                                                        No Custom Media Active
-                                                                    </p>
-                                                                    <p className="text-[11px] text-gray-500 mt-0.5 max-w-xs">
-                                                                        Inheriting default site theme
-                                                                    </p>
-                                                                </div>
-                                                            )
-                                                        )}
+                                                                ) : (
+                                                                    <div className="flex flex-col items-center justify-center p-4 text-center text-gray-500">
+                                                                        <Smartphone size={24} className="mb-1 text-gray-400" />
+                                                                        <p className="text-[11px] font-semibold text-gray-300">No Mobile Media</p>
+                                                                        <p className="text-[10px] text-gray-500 mt-0.5">Inherits Desktop</p>
+                                                                    </div>
+                                                                )
+                                                            )}
 
-                                                        {/* Preview Action Badges Over Media */}
-                                                        {currentVal && (
-                                                            <div className="absolute top-2 right-2 flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
-                                                                <button
-                                                                    onClick={() => setSimulateModal({ ...section, mediaUrl: currentVal, isVideo })}
-                                                                    className="p-1.5 bg-black/70 hover:bg-black/90 backdrop-blur-md rounded-lg text-white text-xs flex items-center gap-1 border border-white/20 transition-colors"
-                                                                    title="Simulate Page Overlay"
-                                                                >
-                                                                    <Eye size={14} />
-                                                                    <span className="text-[11px]">Simulate</span>
-                                                                </button>
-                                                                <a
-                                                                    href={getImageUrl(currentVal)}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="p-1.5 bg-black/70 hover:bg-black/90 backdrop-blur-md rounded-lg text-white border border-white/20 transition-colors"
-                                                                    title="Open media in new tab"
-                                                                >
-                                                                    <ExternalLink size={14} />
-                                                                </a>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                            {/* Preview Overlay Badges */}
+                                                            {displayVal && (
+                                                                <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity z-20">
+                                                                    <button
+                                                                        onClick={() => setSimulateModal({ ...section, activeKey: currentKey, isMobile: true, mediaUrl: displayVal, isVideo })}
+                                                                        className="p-1.5 bg-black/80 hover:bg-black rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+                                                                        title="Simulate Mobile View"
+                                                                    >
+                                                                        <Eye size={12} />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDeleteImage(currentKey, section.label)}
+                                                                        disabled={updating[currentKey]}
+                                                                        className="p-1.5 bg-red-600/80 hover:bg-red-600 rounded-lg text-white border border-red-500/50 transition-colors cursor-pointer"
+                                                                        title={`Delete mobile image for ${section.label}`}
+                                                                    >
+                                                                        <Trash2 size={12} />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="relative bg-black/60 rounded-xl h-52 sm:h-56 flex items-center justify-center overflow-hidden border border-white/10 group shadow-inner">
+                                                            {currentVal ? (
+                                                                isVideo ? (
+                                                                    <video
+                                                                        key={`${getImageUrl(currentVal)}-d`}
+                                                                        src={getImageUrl(currentVal)}
+                                                                        className="w-full h-full object-cover"
+                                                                        autoPlay loop muted playsInline controls
+                                                                    />
+                                                                ) : (
+                                                                    <img
+                                                                        key={`${getImageUrl(currentVal)}-d`}
+                                                                        src={getImageUrl(currentVal)}
+                                                                        alt={section.label}
+                                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                                        onError={(e) => {
+                                                                            e.target.onerror = null;
+                                                                            e.target.src = 'https://via.placeholder.com/600x340?text=Invalid+Image+or+Video+URL';
+                                                                        }}
+                                                                    />
+                                                                )
+                                                            ) : (
+                                                                placeholderUrl ? (
+                                                                    <div className="w-full h-full relative group">
+                                                                        <img
+                                                                            src={getImageUrl(placeholderUrl)}
+                                                                            alt={section.label}
+                                                                            className="w-full h-full object-cover opacity-60 group-hover:opacity-85 transition-opacity"
+                                                                            onError={(e) => {
+                                                                                e.target.onerror = null;
+                                                                                e.target.src = 'https://via.placeholder.com/600x340?text=KALAM+2026+Default';
+                                                                            }}
+                                                                        />
+                                                                        <div className="absolute inset-0 bg-[#14050E]/40" />
+                                                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                                                                            <span className="px-2.5 py-1 rounded-md bg-black/80 border border-white/20 text-[11px] font-semibold text-white/95 backdrop-blur-md">
+                                                                                Default Desktop Media
+                                                                            </span>
+                                                                            <span className="text-[10px] text-gray-300 mt-1 max-w-xs">
+                                                                                Upload file or paste URL below to customize
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex flex-col items-center justify-center p-6 text-center text-gray-500 select-none">
+                                                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-gray-400 group-hover:border-[#24BCE0]/40 transition-colors">
+                                                                            <ImageIcon size={22} />
+                                                                        </div>
+                                                                        <p className="text-xs font-semibold text-gray-300">No Custom Media Active</p>
+                                                                        <p className="text-[11px] text-gray-500 mt-0.5 max-w-xs">Inheriting default site theme</p>
+                                                                    </div>
+                                                                )
+                                                            )}
+
+                                                            {/* Preview Action Badges */}
+                                                            {currentVal && (
+                                                                <div className="absolute top-2 right-2 flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity z-20">
+                                                                    <button
+                                                                        onClick={() => setSimulateModal({ ...section, activeKey: currentKey, isMobile: false, mediaUrl: currentVal, isVideo })}
+                                                                        className="p-1.5 bg-black/70 hover:bg-black/90 backdrop-blur-md rounded-lg text-white text-xs flex items-center gap-1 border border-white/20 transition-colors cursor-pointer"
+                                                                        title="Simulate Page Overlay"
+                                                                    >
+                                                                        <Eye size={14} />
+                                                                        <span className="text-[11px]">Simulate</span>
+                                                                    </button>
+                                                                    <a
+                                                                        href={getImageUrl(currentVal)}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="p-1.5 bg-black/70 hover:bg-black/90 backdrop-blur-md rounded-lg text-white border border-white/20 transition-colors"
+                                                                        title="Open media in new tab"
+                                                                    >
+                                                                        <ExternalLink size={14} />
+                                                                    </a>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDeleteImage(currentKey, section.label)}
+                                                                        disabled={updating[currentKey]}
+                                                                        className="p-1.5 bg-red-600/85 hover:bg-red-600 backdrop-blur-md rounded-lg text-white text-xs flex items-center gap-1 border border-red-500/50 transition-colors cursor-pointer shadow-md"
+                                                                        title={`Delete image for ${section.label}`}
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                        <span className="text-[11px] font-semibold">Delete</span>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {/* INPUT SECTION WITH PLACEHOLDER & BUTTONS */}
+                                            {/* INPUT SECTION WITH LABELS & BUTTONS */}
                                             <div className="flex flex-col gap-3 mt-2">
                                                 {/* URL Input Box */}
                                                 <div>
-                                                    <label className="text-[11px] text-gray-400 font-medium block mb-1">
-                                                        Media URL (Direct link, Google Drive, or Unsplash)
-                                                    </label>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <label className="text-[11px] text-gray-400 font-medium flex items-center gap-1">
+                                                            {isMobileMode ? <Smartphone size={12} className="text-[#D62C76]" /> : <Monitor size={12} className="text-[#24BCE0]" />}
+                                                            <span>{isMobileMode ? 'Mobile Background URL' : 'Desktop Background URL'}</span>
+                                                        </label>
+                                                        {isMobileMode && !currentVal && desktopFallbackVal && (
+                                                            <span className="text-[10px] text-cyan-400 font-medium">
+                                                                Fallback: Desktop active
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="relative">
                                                         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                                                             <LinkIcon size={15} className="text-gray-500" />
@@ -1004,16 +1287,15 @@ const ManageImages = () => {
                                                         <input
                                                             type="text"
                                                             value={currentVal}
-                                                            onChange={(e) => handleInputChange(section.key, e.target.value)}
-                                                            placeholder={section.placeholder}
+                                                            onChange={(e) => handleInputChange(currentKey, e.target.value)}
+                                                            placeholder={placeholderUrl}
                                                             className="w-full bg-black/50 border border-white/15 focus:border-[#24BCE0] rounded-xl py-2.5 pl-9 pr-24 text-xs font-mono text-white placeholder-gray-600 focus:outline-none transition-all shadow-inner"
                                                         />
-                                                        {/* Quick Sample Chip */}
-                                                        {section.samplePreset && !currentVal && (
+                                                        {presetUrl && !currentVal && (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => applyPresetToSection(section.key, section.samplePreset)}
-                                                                className="absolute right-2 top-1.5 text-[10px] font-semibold bg-[#24BCE0]/15 hover:bg-[#24BCE0]/30 text-[#24BCE0] border border-[#24BCE0]/30 px-2.5 py-1 rounded-lg transition-colors"
+                                                                onClick={() => applyPresetToSection(currentKey, presetUrl)}
+                                                                className="absolute right-2 top-1.5 text-[10px] font-semibold bg-[#24BCE0]/15 hover:bg-[#24BCE0]/30 text-[#24BCE0] border border-[#24BCE0]/30 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                                                             >
                                                                 Insert Sample
                                                             </button>
@@ -1022,29 +1304,33 @@ const ManageImages = () => {
                                                 </div>
 
                                                 {/* Action Bar: Presets, Upload, Save, Clear */}
-                                                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5">
-                                                    {/* Left: Preset Shortcut & Clear */}
+                                                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/5">
+                                                    {/* Left: Delete Image Button */}
                                                     <div className="flex items-center gap-2">
-                                                        {section.videoPreset && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => applyPresetToSection(section.key, section.videoPreset)}
-                                                                className="text-[11px] text-[#F2D10A] hover:text-yellow-300 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 transition-colors"
-                                                                title="Try Video Loop sample"
-                                                            >
-                                                                <Play size={11} /> Sample Video
-                                                            </button>
-                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteImage(currentKey, section.label)}
+                                                            disabled={updating[currentKey] || uploading[currentKey] || (!currentVal && !configs[currentKey] && !displayVal)}
+                                                            className="bg-red-500/15 hover:bg-red-500/25 text-red-400 hover:text-red-300 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-red-500/30 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow-red-500/20"
+                                                            title={`Delete ${isMobileMode ? 'mobile' : 'desktop'} image for ${section.label}`}
+                                                        >
+                                                            {updating[currentKey] ? (
+                                                                <LoaderIcon size={14} className="animate-spin text-red-400" />
+                                                            ) : (
+                                                                <Trash2 size={14} />
+                                                            )}
+                                                            <span>Delete {isMobileMode ? 'Mobile Image' : 'Image'}</span>
+                                                        </button>
 
-                                                        {currentVal && (
+                                                        {hasMobileCapability && configs[section.key] && configs[`${section.key}_mobile`] && (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => handleClear(section.key)}
-                                                                disabled={updating[section.key]}
-                                                                className="text-[11px] text-red-400 hover:text-red-300 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors disabled:opacity-50"
-                                                                title="Reset to default theme"
+                                                                onClick={() => handleDeleteBothImages(section)}
+                                                                disabled={updating[section.key] || updating[`${section.key}_mobile`]}
+                                                                className="text-[10px] text-red-300/80 hover:text-red-200 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                                                title={`Delete both desktop and mobile images for ${section.label}`}
                                                             >
-                                                                <Trash2 size={11} /> Reset
+                                                                Delete Both
                                                             </button>
                                                         )}
                                                     </div>
@@ -1054,43 +1340,43 @@ const ManageImages = () => {
                                                         {/* Hidden File Input */}
                                                         <input
                                                             type="file"
-                                                            ref={el => (fileInputRefs.current[section.key] = el)}
+                                                            ref={el => (fileInputRefs.current[currentKey] = el)}
                                                             className="hidden"
                                                             accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/ogg"
                                                             onChange={(e) => {
                                                                 if (e.target.files && e.target.files[0]) {
-                                                                    handleFileUpload(section.key, e.target.files[0]);
+                                                                    handleFileUpload(currentKey, e.target.files[0]);
                                                                 }
                                                             }}
                                                         />
 
                                                         <button
                                                             type="button"
-                                                            onClick={() => fileInputRefs.current[section.key]?.click()}
-                                                            disabled={uploading[section.key]}
-                                                            className="bg-white/10 hover:bg-white/20 text-gray-200 px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 border border-white/10 disabled:opacity-50"
-                                                            title="Upload file directly from device"
+                                                            onClick={() => fileInputRefs.current[currentKey]?.click()}
+                                                            disabled={uploading[currentKey]}
+                                                            className="bg-white/10 hover:bg-white/20 text-gray-200 px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 border border-white/10 disabled:opacity-50 cursor-pointer"
+                                                            title={`Upload ${isMobileMode ? 'mobile portrait' : 'desktop'} media`}
                                                         >
-                                                            {uploading[section.key] ? (
+                                                            {uploading[currentKey] ? (
                                                                 <LoaderIcon size={14} className="animate-spin text-[#24BCE0]" />
                                                             ) : (
                                                                 <UploadCloud size={14} />
                                                             )}
-                                                            <span>Upload File</span>
+                                                            <span>Upload {isMobileMode ? 'Mobile File' : 'Desktop File'}</span>
                                                         </button>
 
                                                         <button
                                                             type="button"
-                                                            onClick={() => handleSave(section.key)}
-                                                            disabled={updating[section.key]}
-                                                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
+                                                            onClick={() => handleSave(currentKey)}
+                                                            disabled={updating[currentKey]}
+                                                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer ${
                                                                 isDirty
                                                                     ? 'bg-gradient-to-r from-[#D62C76] to-[#F47721] hover:brightness-110 text-white animate-pulse'
                                                                     : 'bg-[#24BCE0] hover:bg-[#20A9C9] text-black font-semibold'
                                                             } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                                            title="Save background setting"
+                                                            title={`Save ${isMobileMode ? 'mobile' : 'desktop'} background`}
                                                         >
-                                                            {updating[section.key] ? (
+                                                            {updating[currentKey] ? (
                                                                 <LoaderIcon size={14} className="animate-spin" />
                                                             ) : (
                                                                 <Save size={14} />
@@ -1109,79 +1395,141 @@ const ManageImages = () => {
                 </main>
             </div>
 
-            {/* SIMULATE PAGE OVERLAY MODAL */}
+            {/* SIMULATE PAGE OVERLAY MODAL WITH DESKTOP & MOBILE VIEWS */}
             {simulateModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeInUp">
-                    <div className="relative w-full max-w-5xl h-[85vh] bg-[#14050E] rounded-3xl overflow-hidden border border-[#D62C76]/40 shadow-2xl flex flex-col">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeInUp">
+                    <div
+                        className={`relative transition-all duration-300 flex flex-col bg-[#14050E] overflow-hidden ${
+                            simDevice === 'mobile'
+                                ? 'w-[380px] h-[750px] max-h-[92vh] rounded-[48px] border-4 border-slate-700 shadow-2xl'
+                                : 'w-full max-w-5xl h-[85vh] rounded-3xl border border-[#D62C76]/40 shadow-2xl'
+                        }`}
+                    >
                         {/* Simulation Background Layer */}
                         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                            {simulateModal.isVideo ? (
-                                <video
-                                    src={getImageUrl(simulateModal.mediaUrl)}
-                                    autoPlay
-                                    loop
-                                    muted
-                                    playsInline
-                                    className="w-full h-full object-cover opacity-35"
-                                />
-                            ) : (
-                                <img
-                                    src={getImageUrl(simulateModal.mediaUrl)}
-                                    alt="Simulation"
-                                    className="w-full h-full object-cover opacity-30"
-                                />
-                            )}
+                            {(() => {
+                                const activeMedia = simDevice === 'mobile'
+                                    ? (inputs[`${simulateModal.key}_mobile`] || configs[`${simulateModal.key}_mobile`] || simulateModal.mediaUrl)
+                                    : (inputs[simulateModal.key] || configs[simulateModal.key] || simulateModal.mediaUrl);
+                                const isVid = isVideoUrl(activeMedia);
+
+                                return isVid ? (
+                                    <video
+                                        key={`${getImageUrl(activeMedia)}-${simDevice}`}
+                                        src={getImageUrl(activeMedia)}
+                                        autoPlay loop muted playsInline
+                                        className="w-full h-full object-cover object-center opacity-40"
+                                    />
+                                ) : (
+                                    <img
+                                        key={`${getImageUrl(activeMedia)}-${simDevice}`}
+                                        src={getImageUrl(activeMedia)}
+                                        alt="Simulation"
+                                        className="w-full h-full object-cover object-center opacity-35"
+                                    />
+                                );
+                            })()}
                             <div className="absolute inset-0 bg-[#14050E]/60 backdrop-blur-[0.5px]" />
-                            <div className="absolute inset-0 bg-gradient-to-b from-[#14050E]/80 via-[#14050E]/40 to-[#14050E]/90" />
+                            <div className="absolute inset-0 bg-gradient-to-b from-[#14050E]/85 via-[#14050E]/40 to-[#14050E]/95" />
                         </div>
 
+                        {/* Smartphone Notch if in Mobile Mode */}
+                        {simDevice === 'mobile' && (
+                            <div className="relative z-20 pt-2 flex justify-center pointer-events-none">
+                                <div className="w-24 h-4 bg-black rounded-full border border-white/20 flex items-center justify-center">
+                                    <div className="w-2 h-2 rounded-full bg-slate-800 mr-2" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-950" />
+                                </div>
+                            </div>
+                        )}
+
                         {/* Simulation Top Bar */}
-                        <div className="relative z-10 flex items-center justify-between p-4 px-6 border-b border-white/10 bg-[#140610]/80 backdrop-blur-xl">
+                        <div className="relative z-10 flex items-center justify-between p-3 sm:p-4 px-5 border-b border-white/10 bg-[#140610]/80 backdrop-blur-xl">
                             <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-red-500/80" />
-                                <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                                <span className="w-3 h-3 rounded-full bg-green-500/80" />
-                                <span className="ml-2 text-xs font-mono text-gray-400">
-                                    Simulating: {simulateModal.label} ({simulateModal.targetPath})
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                                </div>
+                                <span className="text-[11px] font-mono text-gray-300 truncate max-w-[140px] sm:max-w-xs ml-1">
+                                    {simulateModal.label}
                                 </span>
                             </div>
 
-                            <button
-                                onClick={() => setSimulateModal(null)}
-                                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-                            >
-                                <X size={18} />
-                            </button>
+                            {/* Device Switcher inside simulation */}
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center bg-black/60 p-1 rounded-xl border border-white/15">
+                                    <button
+                                        onClick={() => setSimDevice('desktop')}
+                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                            simDevice === 'desktop' ? 'bg-[#24BCE0] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                                        }`}
+                                    >
+                                        <Monitor size={12} /> Desktop
+                                    </button>
+                                    <button
+                                        onClick={() => setSimDevice('mobile')}
+                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                            simDevice === 'mobile' ? 'bg-[#D62C76] text-white shadow-sm' : 'text-gray-400 hover:text-white'
+                                        }`}
+                                    >
+                                        <Smartphone size={12} /> Mobile
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={() => setSimulateModal(null)}
+                                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Mock Content */}
-                        <div className="relative z-10 flex-1 p-8 sm:p-12 overflow-y-auto flex flex-col items-center justify-center text-center">
-                            <span className="px-3.5 py-1 rounded-full text-xs font-semibold bg-[#24BCE0]/15 text-[#24BCE0] border border-[#24BCE0]/30 uppercase tracking-widest mb-4">
-                                KALAM 2026 • Live Preview Mode
+                        {/* Mock Page Content */}
+                        <div className={`relative z-10 flex-1 overflow-y-auto flex flex-col items-center justify-center text-center ${
+                            simDevice === 'mobile' ? 'p-6' : 'p-8 sm:p-12'
+                        }`}>
+                            <span className="px-3 py-0.5 rounded-full text-[10px] font-semibold bg-[#24BCE0]/15 text-[#24BCE0] border border-[#24BCE0]/30 uppercase tracking-widest mb-3">
+                                {simDevice === 'mobile' ? '📱 Mobile Phone View' : '🖥️ Desktop Widescreen View'}
                             </span>
-                            <h2 className="text-3xl sm:text-5xl font-black text-white font-heading tracking-tight mb-4 max-w-2xl">
+                            <h2 className={`font-black text-white font-heading tracking-tight mb-3 ${
+                                simDevice === 'mobile' ? 'text-2xl leading-tight' : 'text-3xl sm:text-5xl max-w-2xl'
+                            }`}>
                                 Experience The Extraordinary
                             </h2>
-                            <p className="text-sm sm:text-base text-[#D8D4F0]/80 max-w-xl mb-8">
-                                This live simulation demonstrates how your background image or video blends with KALAM&apos;s cosmic dark theme,
-                                typography, and cards while preserving complete text readability.
+                            <p className={`text-[#D8D4F0]/80 mb-6 ${
+                                simDevice === 'mobile' ? 'text-xs' : 'text-sm sm:text-base max-w-xl'
+                            }`}>
+                                Testing screen-size detection: KALAM 2026 serves the optimal background view for each device.
                             </p>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                                    <h5 className="font-bold text-[#F2D10A] text-lg">90+</h5>
-                                    <p className="text-xs text-gray-400">Technical Events</p>
+                            <div className={`grid gap-3 w-full ${
+                                simDevice === 'mobile' ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3 max-w-2xl'
+                            }`}>
+                                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <h5 className="font-bold text-[#F2D10A] text-base">90+</h5>
+                                    <p className="text-[11px] text-gray-400">Technical Events</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                                    <h5 className="font-bold text-[#F47721] text-lg">₹5 Lakhs+</h5>
-                                    <p className="text-xs text-gray-400">Prize Pool</p>
+                                <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                                    <h5 className="font-bold text-[#F47721] text-base">₹5 Lakhs+</h5>
+                                    <p className="text-[11px] text-gray-400">Prize Pool</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                                    <h5 className="font-bold text-[#D62C76] text-lg">Celebrity</h5>
-                                    <p className="text-xs text-gray-400">Live Stage Night</p>
+                                <div className={`p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md ${
+                                    simDevice === 'mobile' ? 'col-span-2' : ''
+                                }`}>
+                                    <h5 className="font-bold text-[#D62C76] text-base">Celebrity</h5>
+                                    <p className="text-[11px] text-gray-400">Live Stage Show</p>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Mobile bottom indicator */}
+                        {simDevice === 'mobile' && (
+                            <div className="relative z-20 pb-2 flex justify-center pointer-events-none">
+                                <div className="w-24 h-1 bg-white/40 rounded-full" />
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
