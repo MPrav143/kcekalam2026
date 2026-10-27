@@ -28,6 +28,7 @@ const allowedOrigins = [
     'https://kcedhruva-orpin.vercel.app',
     'https://www.kcedhruva.in',
     'https://www.kcekalam.in',
+    'https://kcekalam2026-kce3.onrender.com',
     'https://praveenmurugan.me/kalam2026/'
 ];
 
