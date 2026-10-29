@@ -1,1 +1,0 @@
-import"./vendor-charts-C6xjF8Lg.js";import"./vendor-react-B1WFBPRW.js";import"./vendor-axios-DbwiGWhy.js";import"./vendor-motion-BzE_FbL0.js";import"./vendor-lucide-BnFSIDlW.js";import"./Footer-CFOxUDo2.js";import"./Doodles-CYty9oAP.js";import{t as e}from"./About-0b16V7Nw.js";export{e as default};
