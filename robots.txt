@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /signup
+Disallow: /api/
+
+Sitemap: https://kcekalam.in/sitemap.xml
