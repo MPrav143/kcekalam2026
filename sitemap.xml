@@ -10,6 +10,18 @@
 
   <!-- Public Feature Pages -->
   <url>
+    <loc>https://kcekalam.in/events</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://kcekalam.in/about</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kcekalam.in/passes</loc>
     <lastmod>2026-11-01</lastmod>
     <changefreq>weekly</changefreq>
